@@ -2,9 +2,30 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
+
+  // Компонент кнопки авторизации
+  const AuthButton = () => {
+    return isAuthenticated ? (
+      <Link 
+        href="/profile" 
+        className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors"
+      >
+        Профиль
+      </Link>
+    ) : (
+      <Link 
+        href="/login" 
+        className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors"
+      >
+        Войти
+      </Link>
+    );
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-black/5 backdrop-blur-md z-50">
@@ -37,12 +58,7 @@ export const Header = () => {
             >
               Распродажа
             </Link>
-            <Link 
-              href="/login" 
-              className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors"
-            >
-              Войти
-            </Link>
+            <AuthButton />
           </div>
 
           {/* Mobile Menu Button */}
@@ -79,12 +95,9 @@ export const Header = () => {
             >
               Распродажа
             </Link>
-            <Link 
-              href="/login" 
-              className="block px-4 py-2 bg-black text-white text-center rounded-md hover:bg-gray-800 transition-colors"
-            >
-              Войти
-            </Link>
+            <div className="block">
+              <AuthButton />
+            </div>
           </div>
         </div>
       </nav>

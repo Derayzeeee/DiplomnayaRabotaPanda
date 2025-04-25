@@ -1,24 +1,35 @@
-import { AuthProvider } from '@/providers/AuthProvider';
-import Header from '@/components/layout/Header';
+import type { Metadata } from 'next'
+import { Raleway } from 'next/font/google';
+import { Header } from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer'; // Изменён импорт Footer
+import { AuthProvider } from '@/context/AuthContext';
 import './globals.css';
+
+const raleway = Raleway({
+  subsets: ['latin'],
+  display: 'swap',
+});
+
+export const metadata: Metadata = {
+  title: 'ClothingStore',
+  description: 'Магазин одежды',
+}
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
-    <html lang="ru">
-      <body>
+    <html lang="ru" className={raleway.className}>
+      <body className="min-h-screen flex flex-col">
         <AuthProvider>
-          <div className="min-h-screen flex flex-col">
-            <Header />
-            <main className="flex-grow">
-              {children}
-            </main>
-          </div>
+          <Header />
+          <main className="flex-grow pt-20">
+            {children}
+          </main>
         </AuthProvider>
       </body>
     </html>
-  );
+  )
 }
