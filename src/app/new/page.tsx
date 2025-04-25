@@ -11,8 +11,8 @@ export default async function NewProductsPage() {
 
   // Получаем все категории и уникальные размеры/цвета из новых товаров
   const categories = await Category.find({}).lean();
-  const uniqueSizes = await Product.distinct('sizes', { isNew: true });
-  const uniqueColorObjects = await Product.distinct('colors', { isNew: true });
+  const uniqueSizes = await Product.distinct('sizes', { isNewProduct: true });
+  const uniqueColorObjects = await Product.distinct('colors', { isNewProduct: true });
 
   // Убираем дубликаты цветов по коду цвета
   const uniqueColors = Array.from(new Map(
