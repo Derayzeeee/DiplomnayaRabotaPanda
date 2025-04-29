@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongoose';
 import Product from '@/models/Product';
+import { checkAdminAccess, getUserFromToken } from '@/lib/auth';
+import { NextRequest } from 'next/server';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     await dbConnect();
     
@@ -12,8 +14,15 @@ export async function GET(request: Request) {
     const maxPrice = searchParams.get('maxPrice');
     const colors = searchParams.get('colors')?.split(',');
     const sizes = searchParams.get('sizes')?.split(',');
+    const isAdminRequest = searchParams.get('isAdmin') === 'true';
     
     let query: any = {};
+    
+    // Если это запрос от админ-панели, проверяем права
+    if (isAdminRequest) {
+      const adminCheck = await checkAdminAccess(request);
+      if (adminCheck) return adminCheck;
+    }
     
     if (category) {
       query.category = category;
@@ -45,14 +54,97 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    // Проверка прав администратора
+    const adminCheck = await checkAdminAccess(request);
+    if (adminCheck) return adminCheck;
+
     await dbConnect();
     
     const body = await request.json();
     const product = await Product.create(body);
     
     return NextResponse.json(product, { status: 201 });
+  } catch (error) {
+    console.error('Database Error:', error);
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    // Проверка прав администратора
+    const adminCheck = await checkAdminAccess(request);
+    if (adminCheck) return adminCheck;
+
+    await dbConnect();
+    
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Product ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const body = await request.json();
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      { $set: body },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedProduct) {
+      return NextResponse.json(
+        { error: 'Product not found' },
+        { status: 404 }
+      );
+    }
+    
+    return NextResponse.json(updatedProduct);
+  } catch (error) {
+    console.error('Database Error:', error);
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    // Проверка прав администратора
+    const adminCheck = await checkAdminAccess(request);
+    if (adminCheck) return adminCheck;
+
+    await dbConnect();
+    
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Product ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const deletedProduct = await Product.findByIdAndDelete(id);
+
+    if (!deletedProduct) {
+      return NextResponse.json(
+        { error: 'Product not found' },
+        { status: 404 }
+      );
+    }
+    
+    return NextResponse.json({ message: 'Product deleted successfully' });
   } catch (error) {
     console.error('Database Error:', error);
     return NextResponse.json(

@@ -6,19 +6,34 @@ interface ProductCardProps {
   product: ProductWithId;
 }
 
+// Вспомогательная функция для проверки валидности URL
+function isValidUrl(url: string): boolean {
+  try {
+    new URL(url); // Конструктор URL бросает исключение, если URL некорректен
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export default function ProductCard({ product }: ProductCardProps) {
+  // Используем fallback-изображение, если URL недействителен или отсутствует
+  const imageUrl = product.images?.[0] && isValidUrl(product.images[0])
+    ? product.images[0]
+    : '/fallback-image.jpg'; // Добавьте fallback-изображение в папку public/
+
   return (
     <Link href={`/product/${product._id}`} className="group">
       <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-gray-100">
-        {product.images[0] && (
+        {imageUrl && (
           <Image
-            src={product.images[0]}
-            alt={product.name}
+            src={imageUrl}
+            alt={product.name || 'Product Image'}
             fill
             className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
           />
         )}
-        {/* Заменяем условие, чтобы показывать оба ярлычка */}
+        {/* Условие для отображения ярлыков "Sale" и "New" */}
         <div className="absolute top-2 right-2 flex flex-col gap-2">
           {product.isSale && (
             <div className="bg-red-600 text-white px-2 py-1 rounded-md text-sm font-medium">
