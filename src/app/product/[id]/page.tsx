@@ -18,6 +18,23 @@ interface ProductPageProps {
   }>;
 }
 
+interface MongoProduct {
+  _id: Types.ObjectId;
+  name: string;
+  description: string;
+  price: number;
+  oldPrice?: number;
+  images: string[];
+  category: string;
+  sizes: string[];
+  colors: Array<{ name: string; code: string }>;
+  isNewProduct: boolean;
+  isSale: boolean;
+  inStock: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export default async function ProductPage({
   params,
 }: ProductPageProps) {
@@ -31,40 +48,45 @@ export default async function ProductPage({
   await dbConnect();
 
   try {
-    const rawProduct = await Product.findById(id).lean();
-
+    const rawProduct = (await Product.findById(id).lean()) as unknown;
     if (!rawProduct) {
       notFound();
     }
 
+    // Проверяем, что rawProduct соответствует нашему интерфейсу
+    const mongoProduct = rawProduct as MongoProduct;
+
     const product: ProductWithId = {
-      _id: rawProduct._id.toString(),
-      name: rawProduct.name,
-      description: rawProduct.description,
-      price: rawProduct.price,
-      oldPrice: rawProduct.oldPrice,
-      images: rawProduct.images,
-      category: rawProduct.category,
-      sizes: rawProduct.sizes,
-      colors: rawProduct.colors.map(color => ({
+      _id: mongoProduct._id.toString(),
+      name: mongoProduct.name,
+      description: mongoProduct.description,
+      price: mongoProduct.price,
+      oldPrice: mongoProduct.oldPrice,
+      images: mongoProduct.images,
+      category: mongoProduct.category,
+      sizes: mongoProduct.sizes,
+      colors: mongoProduct.colors.map(color => ({
         name: color.name,
         code: color.code
       })),
-      isNewProduct: rawProduct.isNewProduct,
-      isSale: rawProduct.isSale,
-      salePrice: rawProduct.salePrice,
-      createdAt: rawProduct.createdAt.toISOString(),
-      updatedAt: rawProduct.updatedAt.toISOString()
+      isNewProduct: mongoProduct.isNewProduct,
+      isSale: mongoProduct.isSale,
+      inStock: mongoProduct.inStock,
+      createdAt: mongoProduct.createdAt.toISOString(),
+      updatedAt: mongoProduct.updatedAt.toISOString()
     };
 
-    const relatedRawProducts = await Product.find({
+    const rawRelatedProducts = (await Product.find({
       category: product.category,
       _id: { $ne: product._id }
     })
       .limit(4)
-      .lean();
+      .lean()) as unknown;
 
-    const relatedProducts: ProductWithId[] = relatedRawProducts.map(prod => ({
+    // Проверяем, что rawRelatedProducts соответствует массиву MongoProduct
+    const mongoRelatedProducts = rawRelatedProducts as MongoProduct[];
+
+    const relatedProducts: ProductWithId[] = mongoRelatedProducts.map(prod => ({
       _id: prod._id.toString(),
       name: prod.name,
       description: prod.description,
@@ -79,7 +101,7 @@ export default async function ProductPage({
       })),
       isNewProduct: prod.isNewProduct,
       isSale: prod.isSale,
-      salePrice: prod.salePrice,
+      inStock: prod.inStock,
       createdAt: prod.createdAt.toISOString(),
       updatedAt: prod.updatedAt.toISOString()
     }));
@@ -97,14 +119,16 @@ export default async function ProductPage({
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
                   <div className="mt-4 flex items-center space-x-4">
-                    {product.isSale && product.salePrice ? (
+                    {product.isSale ? (
                       <>
                         <span className="text-2xl font-bold text-red-600">
-                          {product.salePrice.toLocaleString('ru-RU')} ₽
-                        </span>
-                        <span className="text-xl text-gray-500 line-through">
                           {product.price.toLocaleString('ru-RU')} ₽
                         </span>
+                        {product.oldPrice && (
+                          <span className="text-xl text-gray-500 line-through">
+                            {product.oldPrice.toLocaleString('ru-RU')} ₽
+                          </span>
+                        )}
                       </>
                     ) : (
                       <span className="text-2xl font-bold text-gray-900">

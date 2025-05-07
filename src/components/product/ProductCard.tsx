@@ -1,3 +1,4 @@
+// src/components/ProductCard.tsx
 import Image from 'next/image';
 import Link from 'next/link';
 import { ProductWithId } from '@/types/product';
@@ -6,10 +7,9 @@ interface ProductCardProps {
   product: ProductWithId;
 }
 
-// Вспомогательная функция для проверки валидности URL
 function isValidUrl(url: string): boolean {
   try {
-    new URL(url); // Конструктор URL бросает исключение, если URL некорректен
+    new URL(url);
     return true;
   } catch {
     return false;
@@ -17,10 +17,9 @@ function isValidUrl(url: string): boolean {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  // Используем fallback-изображение, если URL недействителен или отсутствует
   const imageUrl = product.images?.[0] && isValidUrl(product.images[0])
     ? product.images[0]
-    : '/fallback-image.jpg'; // Добавьте fallback-изображение в папку public/
+    : '/fallback-image.jpg';
 
   return (
     <Link href={`/product/${product._id}`} className="group">
@@ -33,7 +32,6 @@ export default function ProductCard({ product }: ProductCardProps) {
             className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
           />
         )}
-        {/* Условие для отображения ярлыков "Sale" и "New" */}
         <div className="absolute top-2 right-2 flex flex-col gap-2">
           {product.isSale && (
             <div className="bg-red-600 text-white px-2 py-1 rounded-md text-sm font-medium">
@@ -50,13 +48,13 @@ export default function ProductCard({ product }: ProductCardProps) {
       <div className="mt-4 space-y-1">
         <h3 className="text-sm font-medium text-gray-900">{product.name}</h3>
         <div className="flex items-center gap-2">
-          {product.isSale && product.salePrice ? (
+          {product.isSale && product.oldPrice ? (
             <>
               <span className="text-lg font-bold text-red-600">
-                {product.salePrice} ₽
+                {product.price} ₽
               </span>
               <span className="text-sm text-gray-500 line-through">
-                {product.price} ₽
+                {product.oldPrice} ₽
               </span>
             </>
           ) : (
