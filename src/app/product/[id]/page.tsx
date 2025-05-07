@@ -7,6 +7,7 @@ import ProductGallery from '@/components/product/ProductGallery';
 import SizeSelector from '@/components/product/SizeSelector';
 import ColorSelector from '@/components/product/ColorSelector';
 import AddToCartButton from '@/components/product/AddToCartButton';
+import FavoriteButton from '@/components/product/FavoriteButton';
 import type { ProductWithId } from '@/types/product';
 import Loading from './loading';
 import Footer from '@/components/layout/Footer';
@@ -118,23 +119,45 @@ export default async function ProductPage({
               <div className="space-y-6">
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
-                  <div className="mt-4 flex items-center space-x-4">
-                    {product.isSale ? (
-                      <>
-                        <span className="text-2xl font-bold text-red-600">
+                  <div className="mt-4 flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      {product.isSale ? (
+                        <>
+                          <span className="text-2xl font-bold text-red-600">
+                            {product.price.toLocaleString('ru-RU')} ₽
+                          </span>
+                          {product.oldPrice && (
+                            <span className="text-xl text-gray-500 line-through">
+                              {product.oldPrice.toLocaleString('ru-RU')} ₽
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <span className="text-2xl font-bold text-gray-900">
                           {product.price.toLocaleString('ru-RU')} ₽
                         </span>
-                        {product.oldPrice && (
-                          <span className="text-xl text-gray-500 line-through">
-                            {product.oldPrice.toLocaleString('ru-RU')} ₽
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {/* Индикаторы статуса товара */}
+                      <div className="flex gap-2">
+                        {product.isNewProduct && (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            Новинка
                           </span>
                         )}
-                      </>
-                    ) : (
-                      <span className="text-2xl font-bold text-gray-900">
-                        {product.price.toLocaleString('ru-RU')} ₽
-                      </span>
-                    )}
+                        {product.isSale && (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            Скидка
+                          </span>
+                        )}
+                      </div>
+                      {/* Кнопка избранного */}
+                      <FavoriteButton 
+                        productId={product._id}
+                        className="!bg-gray-100 hover:!bg-gray-200"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -145,7 +168,9 @@ export default async function ProductPage({
                 <div className="space-y-4">
                   <SizeSelector sizes={product.sizes} />
                   <ColorSelector colors={product.colors} />
-                  <AddToCartButton product={product} />
+                  <div className="flex items-center gap-4">
+                    <AddToCartButton product={product} />
+                  </div>
                 </div>
 
                 <div className="border-t border-gray-200 pt-6 space-y-4">
@@ -153,6 +178,13 @@ export default async function ProductPage({
                     <h3 className="text-sm font-medium text-gray-900">Доставка</h3>
                     <p className="mt-2 text-sm text-gray-600">
                       1-3 рабочих дня. Бесплатная доставка при заказе от 5000 ₽
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-900">Статус</h3>
+                    <p className="mt-2 text-sm text-gray-600">
+                      {product.inStock ? 'В наличии' : 'Нет в наличии'}
                     </p>
                   </div>
                 </div>

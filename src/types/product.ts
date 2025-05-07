@@ -19,4 +19,5 @@ export interface Product {
 
 export interface ProductWithId extends Product {
   _id: string;
+  isFavorite?: boolean; // Добавлено новое опциональное поле для отслеживания избранного
 }

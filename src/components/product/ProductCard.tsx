@@ -1,10 +1,14 @@
-// src/components/ProductCard.tsx
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { ProductWithId } from '@/types/product';
+import FavoriteButton from './FavoriteButton';
 
 interface ProductCardProps {
   product: ProductWithId;
+  onFavoriteChange?: (isFavorite: boolean) => void;
 }
 
 function isValidUrl(url: string): boolean {
@@ -16,13 +20,13 @@ function isValidUrl(url: string): boolean {
   }
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, onFavoriteChange }: ProductCardProps) {
   const imageUrl = product.images?.[0] && isValidUrl(product.images[0])
     ? product.images[0]
     : '/fallback-image.jpg';
 
   return (
-    <Link href={`/product/${product._id}`} className="group">
+    <motion.div className="group relative">
       <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-gray-100">
         {imageUrl && (
           <Image
@@ -44,8 +48,16 @@ export default function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
         </div>
+        <div className="absolute bottom-2 right-2 flex flex-col gap-2">
+          <FavoriteButton
+              productId={product._id}
+              initialIsFavorite={product.isFavorite}
+              onFavoriteChange={onFavoriteChange}
+            />
+        </div>
       </div>
-      <div className="mt-4 space-y-1">
+      
+      <Link href={`/product/${product._id}`} className="block mt-4 space-y-1">
         <h3 className="text-sm font-medium text-gray-900">{product.name}</h3>
         <div className="flex items-center gap-2">
           {product.isSale && product.oldPrice ? (
@@ -85,7 +97,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             {product.sizes.length} {product.sizes.length === 1 ? 'размер' : 'размеров'}
           </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </motion.div>
   );
 }

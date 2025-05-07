@@ -1,22 +1,22 @@
-// models/Favorite.ts
 import mongoose from 'mongoose';
 
 const favoriteSchema = new mongoose.Schema({
-  userId: { 
-    type: String, 
-    required: true 
+  userId: {
+    type: String,
+    required: true,
   },
-  products: [{ 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Product' 
-  }]
-}, {
-  timestamps: true
+  productId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product',
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  }
 });
 
-// Создаем составной индекс для оптимизации поиска
-favoriteSchema.index({ userId: 1 });
+// Создаем составной индекс для уникальности комбинации userId и productId
+favoriteSchema.index({ userId: 1, productId: 1 }, { unique: true });
 
-const Favorite = mongoose.models.Favorite || mongoose.model('Favorite', favoriteSchema);
-
-export default Favorite;
+export default mongoose.models.Favorite || mongoose.model('Favorite', favoriteSchema);

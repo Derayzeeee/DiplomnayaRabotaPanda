@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { HeartIcon } from '@heroicons/react/24/outline';
+
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -58,6 +60,10 @@ export const Header = () => {
             >
               Распродажа
             </Link>
+            <Link href="/favorites" className="flex items-center space-x-2">
+              <HeartIcon className="w-6 h-6" />
+              <span>Избранное</span>
+            </Link>
             <AuthButton />
           </div>
 
@@ -84,16 +90,22 @@ export const Header = () => {
               Каталог
             </Link>
             <Link 
-              href="/new-arrivals" 
+              href="/new" 
               className="block text-gray-700 hover:text-black transition-colors"
             >
               Новинки
             </Link>
             <Link 
-              href="/sales" 
+              href="/sale" 
               className="block text-gray-700 hover:text-black transition-colors"
             >
               Распродажа
+            </Link>
+            <Link 
+              href="/favorites" 
+              className="block text-gray-700 hover:text-black transition-colors"
+            >
+              Избранное
             </Link>
             <div className="block">
               <AuthButton />
