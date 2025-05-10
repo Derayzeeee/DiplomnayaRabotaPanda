@@ -2,6 +2,12 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { 
+  CATEGORIES, 
+  SIZES, 
+  HEIGHTS,
+  CATEGORIES_WITH_HEIGHT 
+} from '@/constants/filters';
 
 interface Color {
   name: string;
@@ -19,11 +25,13 @@ interface FiltersProps {
     categories: string[];
     sizes: string[];
     colors: string[];
+    heights: string[];
   }) => void;
   initialFilters?: {
     categories: string[];
     sizes: string[];
     colors: string[];
+    heights: string[];
   };
 }
 
@@ -43,8 +51,18 @@ export default function Filters({
   const [selectedColors, setSelectedColors] = useState<string[]>(
     initialFilters?.colors || []
   );
+  const [selectedHeights, setSelectedHeights] = useState<string[]>(
+    initialFilters?.heights || []
+  );
 
-  const handleFilterChange = (type: 'categories' | 'sizes' | 'colors', value: string) => {
+  const showHeightFilter = selectedCategories.some(category => 
+    CATEGORIES_WITH_HEIGHT.includes(category)
+  );
+
+  const handleFilterChange = (
+    type: 'categories' | 'sizes' | 'colors' | 'heights',
+    value: string
+  ) => {
     let newSelection: string[] = [];
 
     switch (type) {
@@ -66,18 +84,26 @@ export default function Filters({
           : [...selectedColors, value];
         setSelectedColors(newSelection);
         break;
+      case 'heights':
+        newSelection = selectedHeights.includes(value)
+          ? selectedHeights.filter((h) => h !== value)
+          : [...selectedHeights, value];
+        setSelectedHeights(newSelection);
+        break;
     }
 
     onFilterChange({
       categories: type === 'categories' ? newSelection : selectedCategories,
       sizes: type === 'sizes' ? newSelection : selectedSizes,
       colors: type === 'colors' ? newSelection : selectedColors,
+      heights: type === 'heights' ? newSelection : selectedHeights,
     });
   };
 
   const isAnyFilterActive = selectedCategories.length > 0 || 
                           selectedSizes.length > 0 || 
-                          selectedColors.length > 0;
+                          selectedColors.length > 0 ||
+                          selectedHeights.length > 0;
 
   return (
     <div className="space-y-8">
@@ -85,7 +111,7 @@ export default function Filters({
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Категории</h3>
         <div className="space-y-2">
-          {categories.map((category) => (
+          {CATEGORIES.map((category) => (
             <motion.label
               key={category}
               className="flex items-center cursor-pointer group"
@@ -109,7 +135,7 @@ export default function Filters({
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Размеры</h3>
         <div className="grid grid-cols-4 gap-2">
-          {sizes.map((size) => (
+          {SIZES.map((size) => (
             <motion.button
               key={size}
               onClick={() => handleFilterChange('sizes', size)}
@@ -128,6 +154,32 @@ export default function Filters({
           ))}
         </div>
       </div>
+
+      {/* Рост */}
+      {showHeightFilter && (
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Рост</h3>
+          <div className="grid grid-cols-3 gap-2">
+            {HEIGHTS.map((height) => (
+              <motion.button
+                key={height}
+                onClick={() => handleFilterChange('heights', height)}
+                className={`
+                  py-2 px-3 text-sm font-medium rounded-md transition-all duration-200
+                  ${selectedHeights.includes(height)
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-white text-gray-900 border border-gray-300 hover:border-indigo-500 hover:text-indigo-600'
+                  }
+                `}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {height}
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Цвета */}
       <div>
@@ -188,7 +240,13 @@ export default function Filters({
             setSelectedCategories([]);
             setSelectedSizes([]);
             setSelectedColors([]);
-            onFilterChange({ categories: [], sizes: [], colors: [] });
+            setSelectedHeights([]);
+            onFilterChange({
+              categories: [],
+              sizes: [],
+              colors: [],
+              heights: []
+            });
           }}
           className="w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors duration-200"
           whileHover={{ scale: 1.02 }}

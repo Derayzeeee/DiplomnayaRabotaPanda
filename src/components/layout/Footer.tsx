@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import SizeChart from '../common/SizeChart';
 
 export default function Footer() {
   return (
@@ -46,9 +47,7 @@ export default function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/size-guide" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
-                    Размерная сетка
-                  </Link>
+                  <SizeChart />
                 </li>
               </ul>
             </div>
@@ -140,7 +139,7 @@ export default function Footer() {
         {/* Нижняя часть футера */}
         <div className="border-t border-gray-200 py-8">
           <p className="text-sm text-gray-600 text-center">
-            © 2024 ClothingStore. Все права защищены.
+            © 2025 ClothingStore. Все права защищены.
           </p>
         </div>
       </div>

@@ -8,10 +8,12 @@ import SizeSelector from '@/components/product/SizeSelector';
 import ColorSelector from '@/components/product/ColorSelector';
 import AddToCartButton from '@/components/product/AddToCartButton';
 import FavoriteButton from '@/components/product/FavoriteButton';
+import SizeChart from '@/components/common/SizeChart';
 import Loading from './loading';
 import Footer from '@/components/layout/Footer';
 import RelatedProducts from './RelatedProducts';
 import { useCart } from '@/context/CartContext';
+import { CATEGORIES_WITH_HEIGHT } from '@/constants/filters';
 
 interface ProductPageProps {
   id: string;
@@ -76,15 +78,20 @@ export default function ProductPage({ id }: ProductPageProps) {
     return notFound();
   }
 
+  const showHeightInfo = CATEGORIES_WITH_HEIGHT.includes(product.category);
+
   return (
     <div className="bg-white min-h-screen flex flex-col">
       <main className="flex-grow container mx-auto px-4 py-8 pt-24">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* Галерея изображений */}
           <div>
             <ProductGallery images={product.images} productName={product.name} />
           </div>
 
+          {/* Информация о продукте */}
           <div className="space-y-6">
+            {/* Заголовок и цена */}
             <div>
               <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
               <div className="mt-4 flex items-center justify-between">
@@ -127,21 +134,34 @@ export default function ProductPage({ id }: ProductPageProps) {
               </div>
             </div>
 
+            {/* Описание */}
             <div className="prose prose-sm">
               <p>{product.description}</p>
             </div>
 
+            {/* Выбор размера, цвета и количества */}
             <div className="space-y-4">
-              <SizeSelector 
-                sizes={product.sizes}
-                selectedSize={selectedSize}
-                onSelect={setSelectedSize}
-              />
+              {/* Размеры и таблица размеров */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium text-gray-900">Размеры</h3>
+                  <SizeChart />
+                </div>
+                <SizeSelector 
+                  sizes={product.sizes}
+                  selectedSize={selectedSize}
+                  onSelect={setSelectedSize}
+                />
+              </div>
+
+              {/* Цвета */}
               <ColorSelector 
                 colors={product.colors}
                 selectedColor={selectedColor}
                 onSelect={setSelectedColor}
               />
+
+              {/* Количество и кнопка добавления в корзину */}
               <div className="flex items-center gap-4">
                 <div className="flex items-center border rounded-md">
                   <button
@@ -174,7 +194,9 @@ export default function ProductPage({ id }: ProductPageProps) {
               </div>
             </div>
 
+            {/* Дополнительная информация */}
             <div className="border-t border-gray-200 pt-6 space-y-4">
+              {/* Доставка */}
               <div>
                 <h3 className="text-sm font-medium text-gray-900">Доставка</h3>
                 <p className="mt-2 text-sm text-gray-600">
@@ -182,16 +204,43 @@ export default function ProductPage({ id }: ProductPageProps) {
                 </p>
               </div>
               
+              {/* Статус наличия */}
               <div>
                 <h3 className="text-sm font-medium text-gray-900">Статус</h3>
                 <p className="mt-2 text-sm text-gray-600">
                   {product.inStock ? 'В наличии' : 'Нет в наличии'}
                 </p>
               </div>
+
+              {/* Информация о росте */}
+              {showHeightInfo && product.heights && product.heights.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-900">Рост</h3>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {product.heights.map((height: string) => ( // Добавляем явную типизацию
+                      <span
+                        key={height}
+                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                      >
+                        {height} см
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Категория */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-900">Категория</h3>
+                <p className="mt-2 text-sm text-gray-600">
+                  {product.category}
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
+        {/* Похожие товары */}
         {relatedProducts.length > 0 && (
           <div className="mt-16">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">

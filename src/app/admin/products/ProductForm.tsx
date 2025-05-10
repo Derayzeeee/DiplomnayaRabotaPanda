@@ -1,338 +1,372 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useForm } from 'react-hook-form';
+import Image from 'next/image';
 import type { ProductWithId } from '@/types/product';
+import { CATEGORIES, SIZES, HEIGHTS, CATEGORIES_WITH_HEIGHT } from '@/constants/filters';
 
 interface ProductFormProps {
   initialData?: ProductWithId;
   onSubmit: (data: any) => Promise<void>;
-  loading: boolean;
 }
 
-export default function ProductForm({ initialData, onSubmit, loading }: ProductFormProps) {
-  const [colors, setColors] = useState<Array<{ name: string; code: string }>>([]);
-  const [newColor, setNewColor] = useState({ name: '', code: '' });
-  const [uploadedImages, setUploadedImages] = useState<string[]>(initialData?.images || []);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [isSale, setIsSale] = useState(initialData?.isSale || false);
-  const [price, setPrice] = useState(initialData?.price?.toString() || '');
-  const [oldPrice, setOldPrice] = useState(initialData?.oldPrice?.toString() || '');
+export default function ProductForm({ initialData, onSubmit }: ProductFormProps) {
+  const [uploadingStatus, setUploadingStatus] = useState<'idle' | 'uploading' | 'error'>('idle');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedSizes, setSelectedSizes] = useState<{ [key: string]: boolean }>(
+    SIZES.reduce((acc, size) => ({
+      ...acc,
+      [size]: initialData?.sizes?.includes(size) || false
+    }), {})
+  );
+  const [selectedHeights, setSelectedHeights] = useState<{ [key: string]: boolean }>(
+    HEIGHTS.reduce((acc, height) => ({
+      ...acc,
+      [height]: initialData?.heights?.includes(height) || false
+    }), {})
+  );
+
+  const { register, handleSubmit, setValue, watch, reset } = useForm<ProductWithId>({
+    defaultValues: initialData || {
+      _id: '',
+      name: '',
+      description: '',
+      price: 0,
+      oldPrice: 0,
+      category: '',
+      sizes: [],
+      heights: [],
+      colors: [],
+      images: [],
+      isNewProduct: false,
+      isSale: false,
+      inStock: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  });
 
   useEffect(() => {
-    if (initialData?.colors) {
-      setColors(initialData.colors);
+    if (initialData) {
+      reset(initialData);
+      setColors(initialData.colors || []);
+      setImages(initialData.images || []);
+      setSelectedSizes(
+        SIZES.reduce((acc, size) => ({
+          ...acc,
+          [size]: initialData.sizes?.includes(size) || false
+        }), {})
+      );
+      setSelectedHeights(
+        HEIGHTS.reduce((acc, height) => ({
+          ...acc,
+          [height]: initialData.heights?.includes(height) || false
+        }), {})
+      );
     }
-  }, [initialData]);
+  }, [initialData, reset]);
 
-  const handleSaleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const isChecked = e.target.checked;
-    setIsSale(isChecked);
-    
-    if (isChecked) {
-      setOldPrice(price);
-      setPrice('');
-    } else {
-      if (oldPrice) {
-        setPrice(oldPrice);
-      }
-      setOldPrice('');
+  const [colors, setColors] = useState<Array<{ name: string; code: string }>>(
+    initialData?.colors || []
+  );
+  const [newColorName, setNewColorName] = useState('');
+  const [newColorCode, setNewColorCode] = useState('#000000');
+  const [images, setImages] = useState<string[]>(initialData?.images || []);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+
+  const selectedCategory = watch('category');
+  const showHeightField = CATEGORIES_WITH_HEIGHT.includes(selectedCategory);
+  const isSale = watch('isSale');
+
+  useEffect(() => {
+    setValue('colors', colors);
+    setValue('images', images);
+  }, [colors, images, setValue]);
+
+  const addColor = () => {
+    if (newColorName && newColorCode) {
+      setColors([...colors, { name: newColorName, code: newColorCode }]);
+      setNewColorName('');
+      setNewColorCode('#000000');
     }
   };
 
-  // Добавляем обработчик изменения цены
-  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    // Проверяем, что значение является положительным числом
-    if (!value || value.match(/^\d*\.?\d*$/)) {
-      setPrice(value);
-    }
-  };
-
-  const handleAddColor = () => {
-    if (newColor.name && newColor.code) {
-      setColors([...colors, newColor]);
-      setNewColor({ name: '', code: '' });
-    }
-  };
-
-  const handleRemoveColor = (index: number) => {
+  const removeColor = (index: number) => {
     setColors(colors.filter((_, i) => i !== index));
-  };
-
-  // Добавляем обработчик удаления изображения
-  const handleRemoveImage = (index: number) => {
-    setUploadedImages(prevImages => prevImages.filter((_, i) => i !== index));
   };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (!files) return;
+    if (!files || files.length === 0) return;
 
-    try {
-      setUploadProgress(0);
-      const uploadedUrls: string[] = [];
+    setUploadingStatus('uploading');
+    setUploadProgress(0);
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        
-        if (!file.type.startsWith('image/')) {
-          throw new Error('Пожалуйста, загружайте только изображения');
-        }
-        if (file.size > 5 * 1024 * 1024) {
-          throw new Error('Размер изображения должен быть меньше 5MB');
-        }
+    const uploadPromises = Array.from(files).map(async (file) => {
+      const formData = new FormData();
+      formData.append('file', file);
 
-        const formData = new FormData();
-        formData.append('file', file);
-
+      try {
         const response = await fetch('/api/upload', {
           method: 'POST',
           body: formData,
         });
 
         if (!response.ok) {
-          throw new Error('Ошибка загрузки изображения');
+          throw new Error('Upload failed');
         }
 
         const data = await response.json();
-        uploadedUrls.push(data.url);
-        setUploadProgress(((i + 1) / files.length) * 100);
+        setUploadProgress((prev) => prev + (100 / files.length));
+        return data.url;
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        setUploadingStatus('error');
+        return null;
       }
+    });
 
-      setUploadedImages(prevImages => [...prevImages, ...uploadedUrls]);
+    try {
+      const uploadedUrls = await Promise.all(uploadPromises);
+      const validUrls = uploadedUrls.filter((url): url is string => url !== null);
+      setImages((prev) => [...prev, ...validUrls]);
+      setUploadingStatus('idle');
+      setUploadProgress(0);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     } catch (error) {
-      console.error('Ошибка загрузки:', error);
-      alert(error instanceof Error ? error.message : 'Не удалось загрузить изображения');
+      console.error('Error in upload process:', error);
+      setUploadingStatus('error');
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    
-    const productData = {
-      name: formData.get('name'),
-      description: formData.get('description'),
-      price: Number(price),
-      oldPrice: isSale ? Number(oldPrice) : undefined,
-      category: formData.get('category'),
-      colors: colors,
-      sizes: formData.getAll('sizes'),
-      images: uploadedImages,
-      isNewProduct: formData.get('isNewProduct') === 'true',
-      isSale: isSale,
-      inStock: true
-    };
+  const removeImage = (index: number) => {
+    setImages(images.filter((_, i) => i !== index));
+  };
 
-    try {
-      await onSubmit(productData);
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      alert('Ошибка при сохранении товара');
-    }
+  const handleSizesSubmit = () => {
+    const selectedSizesList = Object.entries(selectedSizes)
+      .filter(([_, isSelected]) => isSelected)
+      .map(([size]) => size);
+    setValue('sizes', selectedSizesList);
+  };
+
+  const handleHeightsSubmit = () => {
+    const selectedHeightsList = Object.entries(selectedHeights)
+      .filter(([_, isSelected]) => isSelected)
+      .map(([height]) => height);
+    setValue('heights', selectedHeightsList);
+  };
+
+  const toggleSize = (size: string) => {
+    setSelectedSizes(prev => ({
+      ...prev,
+      [size]: !prev[size]
+    }));
+  };
+
+  const toggleHeight = (height: string) => {
+    setSelectedHeights(prev => ({
+      ...prev,
+      [height]: !prev[height]
+    }));
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-          Название товара
-        </label>
-        <input
-          type="text"
-          name="name"
-          id="name"
-          required
-          defaultValue={initialData?.name}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-          Описание
-        </label>
-        <textarea
-          name="description"
-          id="description"
-          rows={4}
-          required
-          defaultValue={initialData?.description}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* Основные данные */}
+      <div className="space-y-4">
         <div>
-          <label className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              name="isNewProduct"
-              defaultChecked={initialData?.isNewProduct}
-              className="rounded border-gray-300 text-black focus:ring-black"
-            />
-            <span className="text-sm font-medium text-gray-700">Новый товар</span>
-          </label>
-        </div>
-        <div>
-          <label className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              name="isSale"
-              checked={isSale}
-              onChange={handleSaleChange}
-              className="rounded border-gray-300 text-black focus:ring-black"
-            />
-            <span className="text-sm font-medium text-gray-700">Распродажа</span>
-          </label>
-        </div>
-      </div>
-
-      <div>
-        <label htmlFor="price" className="block text-sm font-medium text-gray-700">
-          {isSale ? 'Новая цена' : 'Цена'}
-        </label>
-        <input
-          type="number"
-          name="price"
-          id="price"
-          required
-          min="0"
-          step="0.01"
-          value={price}
-          onChange={handlePriceChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-        />
-      </div>
-
-      {isSale && (
-        <div>
-          <label htmlFor="oldPrice" className="block text-sm font-medium text-gray-700">
-            Старая цена
+          <label className="block text-sm font-medium text-gray-700">
+            Название
           </label>
           <input
-            type="number"
-            name="oldPrice"
-            id="oldPrice"
-            disabled
-            value={oldPrice}
-            className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+            type="text"
+            {...register('name', { required: true })}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Описание
+          </label>
+          <textarea
+            {...register('description', { required: true })}
+            rows={4}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Категория
+          </label>
+          <select
+            {...register('category', { required: true })}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+          >
+            <option value="">Выберите категорию</option>
+            {CATEGORIES.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Цена
+            </label>
+            <input
+              type="number"
+              {...register('price', { 
+                required: true, 
+                min: 0,
+                valueAsNumber: true
+              })}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+            />
+          </div>
+
+          {isSale && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Старая цена
+              </label>
+              <input
+                type="number"
+                {...register('oldPrice', { 
+                  min: 0,
+                  valueAsNumber: true
+                })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Размеры */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Размеры</h3>
+        <div className="border rounded-md p-4">
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {SIZES.map((size) => (
+              <label key={size} className="flex items-center justify-between p-2 hover:bg-gray-50">
+                <span>{size}</span>
+                <input
+                  type="checkbox"
+                  checked={selectedSizes[size]}
+                  onChange={() => toggleSize(size)}
+                  className="rounded border-gray-300 text-black focus:ring-black"
+                />
+              </label>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={handleSizesSubmit}
+            className="mt-4 w-full bg-black text-white py-2 px-4 rounded-md hover:bg-gray-800"
+          >
+            Применить размеры
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {watch('sizes')?.map((size) => (
+            <span
+              key={size}
+              className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100"
+            >
+              {size}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Рост */}
+      {showHeightField && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Рост</h3>
+          <div className="border rounded-md p-4">
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {HEIGHTS.map((height) => (
+                <label key={height} className="flex items-center justify-between p-2 hover:bg-gray-50">
+                  <span>{height} см</span>
+                  <input
+                    type="checkbox"
+                    checked={selectedHeights[height]}
+                    onChange={() => toggleHeight(height)}
+                    className="rounded border-gray-300 text-black focus:ring-black"
+                  />
+                </label>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={handleHeightsSubmit}
+              className="mt-4 w-full bg-black text-white py-2 px-4 rounded-md hover:bg-gray-800"
+            >
+              Применить рост
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {watch('heights')?.map((height) => (
+              <span
+                key={height}
+                className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100"
+              >
+                {height} см
+              </span>
+            ))}
+          </div>
         </div>
       )}
 
-      <div>
-        <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-          Категория
-        </label>
-        <select
-          name="category"
-          id="category"
-          required
-          defaultValue={initialData?.category}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-        >
-          <option value="">Выберите категорию</option>
-          <option value="shoes">Обувь</option>
-          <option value="clothes">Одежда</option>
-          <option value="accessories">Аксессуары</option>
-        </select>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Цвета</label>
-        <div className="mt-2 space-y-2">
+      {/* Цвета */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Цвета</h3>
+        <div className="flex gap-4">
+          <input
+            type="text"
+            value={newColorName}
+            onChange={(e) => setNewColorName(e.target.value)}
+            placeholder="Название цвета"
+            className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+          />
+          <input
+            type="color"
+            value={newColorCode}
+            onChange={(e) => setNewColorCode(e.target.value)}
+            className="h-10 w-20"
+          />
+          <button
+            type="button"
+            onClick={addColor}
+            className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800"
+          >
+            Добавить
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-2">
           {colors.map((color, index) => (
-            <div key={index} className="flex items-center space-x-2">
-              <span>{color.name}</span>
-              <div 
-                className="w-6 h-6 rounded-full border-2 border-white ring-1 ring-gray-200"
+            <div
+              key={index}
+              className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full"
+            >
+              <span
+                className="w-4 h-4 rounded-full"
                 style={{ backgroundColor: color.code }}
               />
+              <span>{color.name}</span>
               <button
                 type="button"
-                onClick={() => handleRemoveColor(index)}
-                className="text-red-600 hover:text-red-800"
-              >
-                Удалить
-              </button>
-            </div>
-          ))}
-          <div className="flex items-center space-x-2">
-            <input
-              type="text"
-              placeholder="Название цвета"
-              value={newColor.name}
-              onChange={(e) => setNewColor({ ...newColor, name: e.target.value })}
-              className="rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-            />
-            <input
-              type="color"
-              value={newColor.code}
-              onChange={(e) => setNewColor({ ...newColor, code: e.target.value })}
-              className="w-10 h-10"
-            />
-            <button
-              type="button"
-              onClick={handleAddColor}
-              className="px-3 py-1 bg-black text-white rounded-md hover:bg-gray-800"
-            >
-              Добавить цвет
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Размеры</label>
-        <div className="mt-2 space-x-2">
-          {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map((size) => (
-            <label key={size} className="inline-flex items-center">
-              <input
-                type="checkbox"
-                name="sizes"
-                value={size}
-                defaultChecked={initialData?.sizes?.includes(size)}
-                className="rounded border-gray-300 text-black focus:ring-black"
-              />
-              <span className="ml-2">{size}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Изображения
-        </label>
-        <input
-          type="file"
-          onChange={handleImageUpload}
-          multiple
-          accept="image/png,image/jpeg,image/webp"
-          className="mt-1 block w-full"
-        />
-        {uploadProgress > 0 && uploadProgress < 100 && (
-          <div className="mt-2 h-2 bg-gray-200 rounded-full">
-            <div
-              className="h-2 bg-black rounded-full"
-              style={{ width: `${uploadProgress}%` }}
-            />
-          </div>
-        )}
-        
-        <div className="mt-4 grid grid-cols-4 gap-2">
-          {uploadedImages.map((image, index) => (
-            <div key={index} className="relative">
-              <img
-                src={image}
-                alt={`Товар ${index + 1}`}
-                className="w-full h-24 object-cover rounded"
-              />
-              <button
-                type="button"
-                onClick={() => handleRemoveImage(index)}
-                className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full"
+                onClick={() => removeColor(index)}
+                className="text-red-500 hover:text-red-700"
               >
                 ×
               </button>
@@ -341,13 +375,94 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
         </div>
       </div>
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:opacity-50"
-      >
-        {loading ? 'Сохранение...' : 'Сохранить'}
-      </button>
+      {/* Изображения */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Изображения</h3>
+        <div className="flex flex-col gap-4">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleImageUpload}
+            className="block w-full text-sm text-gray-500
+              file:mr-4 file:py-2 file:px-4
+              file:rounded-full file:border-0
+              file:text-sm file:font-semibold
+              file:bg-black file:text-white
+              hover:file:bg-gray-800"
+          />
+          {uploadingStatus === 'uploading' && (
+            <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div
+                className="bg-black h-2.5 rounded-full transition-all duration-300"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+          )}
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {images.map((image, index) => (
+            <div key={index} className="relative group aspect-square">
+              <Image
+                src={image}
+                alt=""
+                fill
+                className="object-cover rounded-lg"
+              />
+              <button
+                type="button"
+                onClick={() => removeImage(index)}
+                className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Флажки */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-4">
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              {...register('isNewProduct')}
+              className="rounded border-gray-300 text-black focus:ring-black"
+            />
+            <span>Новинка</span>
+          </label>
+
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              {...register('isSale')}
+              className="rounded border-gray-300 text-black focus:ring-black"
+            />
+            <span>Скидка</span>
+          </label>
+
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              {...register('inStock')}
+              className="rounded border-gray-300 text-black focus:ring-black"
+            />
+            <span>В наличии</span>
+          </label>
+        </div>
+      </div>
+
+      {/* Кнопка отправки */}
+      <div>
+        <button
+          type="submit"
+          className="w-full bg-black text-white py-2 px-4 rounded-md hover:bg-gray-800 transition-colors"
+        >
+          {initialData ? 'Обновить товар' : 'Создать товар'}
+        </button>
+      </div>
     </form>
   );
 }

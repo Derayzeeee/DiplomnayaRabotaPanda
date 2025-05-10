@@ -31,6 +31,7 @@ export interface Product {
   oldPrice?: number | undefined;
   category: string;
   sizes: string[];
+  heights?: string[];
   colors: Color[];
   images: string[];
   isNewProduct?: boolean;
@@ -43,4 +44,18 @@ export interface Product {
 export interface ProductWithId extends Product {
   _id: string;
   isFavorite?: boolean;
+  name: string;
+  description: string;
+  price: number;
+  oldPrice?: number;
+  category: string;
+  sizes: string[];
+  heights?: string[];
+  colors: Array<{ name: string; code: string }>;
+  images: string[];
+  isNewProduct: boolean;
+  isSale: boolean;
+  inStock: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
