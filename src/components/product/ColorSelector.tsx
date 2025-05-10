@@ -1,19 +1,18 @@
 'use client';
 
-import { useState } from 'react';
-
-interface Color {
-  name: string;
-  code: string;
-}
+import type { Color } from '@/types/product';
 
 interface ColorSelectorProps {
   colors: Color[];
+  selectedColor: Color | null;
+  onSelect: (color: Color) => void;
 }
 
-export default function ColorSelector({ colors }: ColorSelectorProps) {
-  const [selectedColor, setSelectedColor] = useState<string>('');
-
+export default function ColorSelector({ 
+  colors, 
+  selectedColor, 
+  onSelect 
+}: ColorSelectorProps) {
   return (
     <div>
       <h3 className="text-sm font-medium text-gray-900">Цвет</h3>
@@ -21,10 +20,10 @@ export default function ColorSelector({ colors }: ColorSelectorProps) {
         {colors.map((color) => (
           <button
             key={color.code}
-            onClick={() => setSelectedColor(color.code)}
+            onClick={() => onSelect(color)}
             className={`
               w-8 h-8 rounded-full
-              ${selectedColor === color.code 
+              ${selectedColor?.code === color.code 
                 ? 'ring-2 ring-gray-900' 
                 : 'ring-1 ring-gray-200'
               }
@@ -41,15 +40,15 @@ export default function ColorSelector({ colors }: ColorSelectorProps) {
             `}
             style={{ 
               backgroundColor: color.code,
-              // Добавляем внутреннюю тень для белого цвета
               boxShadow: (color.code.toLowerCase() === '#ffffff' || color.code.toLowerCase() === 'white')
                 ? 'inset 0 0 0 1px rgba(0, 0, 0, 0.1)'
                 : 'none'
             }}
             title={color.name}
             aria-label={`Выбрать цвет: ${color.name}`}
+            type="button"
           >
-            {selectedColor === color.code && (
+            {selectedColor?.code === color.code && (
               <span 
                 className={`
                   absolute inset-0 rounded-full
@@ -65,6 +64,7 @@ export default function ColorSelector({ colors }: ColorSelectorProps) {
                   className="h-4 w-4" 
                   viewBox="0 0 20 20" 
                   fill="currentColor"
+                  aria-hidden="true"
                 >
                   <path 
                     fillRule="evenodd" 
@@ -79,7 +79,7 @@ export default function ColorSelector({ colors }: ColorSelectorProps) {
       </div>
       {selectedColor && (
         <p className="mt-2 text-sm text-gray-500">
-          Выбран: {colors.find(c => c.code === selectedColor)?.name}
+          Выбран: {selectedColor.name}
         </p>
       )}
     </div>

@@ -1,8 +1,9 @@
-import type { Metadata } from 'next'
+import type { Metadata } from 'next';
 import { Raleway } from 'next/font/google';
 import { Header } from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer'; // Изменён импорт Footer
+import Footer from '@/components/layout/Footer';
 import { AuthProvider } from '@/context/AuthContext';
+import { CartProvider } from '@/context/CartContext';
 import './globals.css';
 
 const raleway = Raleway({
@@ -24,10 +25,13 @@ export default function RootLayout({
     <html lang="ru" className={raleway.className}>
       <body className="min-h-screen flex flex-col">
         <AuthProvider>
-          <Header />
-          <main className="flex-grow pt-20">
-            {children}
-          </main>
+          <CartProvider>
+            <Header />
+            <main className="flex-grow pt-20">
+              {children}
+            </main>
+            <Footer />
+          </CartProvider>
         </AuthProvider>
       </body>
     </html>

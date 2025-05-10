@@ -1,55 +1,69 @@
 'use client';
 
 import { useState } from 'react';
-import { Product } from '@/types/product';
+import { useCart } from '@/context/CartContext';
+import type { ProductWithId } from '@/types/product';
 
 interface AddToCartButtonProps {
-  product: Product;
+  product: ProductWithId;
+  selectedSize?: string;
+  selectedColor?: { name: string; code: string };
+  quantity?: number;
 }
 
-export default function AddToCartButton({ product }: AddToCartButtonProps) {
-  const [quantity, setQuantity] = useState(1);
+export default function AddToCartButton({
+  product,
+  selectedSize,
+  selectedColor,
+  quantity = 1
+}: AddToCartButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const { addItem } = useCart();
 
   const handleAddToCart = async () => {
+    if (!selectedSize || !selectedColor) {
+      alert('Пожалуйста, выберите размер и цвет');
+      return;
+    }
+
     setIsLoading(true);
-    // Здесь будет логика добавления в корзину
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    alert('Товар добавлен в корзину');
+    try {
+      addItem({
+        productId: product._id,
+        name: product.name,
+        price: product.price,
+        oldPrice: product.oldPrice,
+        image: product.images[0],
+        size: selectedSize,
+        color: selectedColor,
+        quantity,
+      });
+      // Можно добавить уведомление об успешном добавлении
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      alert('Произошла ошибка при добавлении товара в корзину');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center space-x-4">
-        <button
-          onClick={() => setQuantity(Math.max(1, quantity - 1))}
-          className="p-2 border border-gray-300 rounded-md"
-        >
-          -
-        </button>
-        <span className="text-lg font-medium">{quantity}</span>
-        <button
-          onClick={() => setQuantity(quantity + 1)}
-          className="p-2 border border-gray-300 rounded-md"
-        >
-          +
-        </button>
-      </div>
-
-      <button
-        onClick={handleAddToCart}
-        disabled={isLoading}
-        className={`
-          w-full py-4 px-8 text-lg font-medium rounded-md
-          ${isLoading
-            ? 'bg-gray-400 cursor-not-allowed'
-            : 'bg-black text-white hover:bg-gray-900'
-          }
-        `}
-      >
-        {isLoading ? 'Добавление...' : 'Добавить в корзину'}
-      </button>
-    </div>
+    <button
+      onClick={handleAddToCart}
+      disabled={isLoading || !product.inStock}
+      className={`w-full flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white ${
+        product.inStock
+          ? 'bg-black hover:bg-gray-800'
+          : 'bg-gray-400 cursor-not-allowed'
+      } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+    >
+      {isLoading ? (
+        'Добавление...'
+      ) : product.inStock ? (
+        'Добавить в корзину'
+      ) : (
+        'Нет в наличии'
+      )}
+    </button>
   );
 }

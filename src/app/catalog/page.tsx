@@ -42,7 +42,6 @@ export default async function CatalogPage() {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

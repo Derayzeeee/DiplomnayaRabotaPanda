@@ -63,8 +63,8 @@ export default function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/orders" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
-                    Заказы
+                  <Link href="/cart" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                    Корзина
                   </Link>
                 </li>
                 <li>
