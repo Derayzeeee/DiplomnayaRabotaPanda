@@ -8,10 +8,16 @@ import { CATEGORIES, SIZES, HEIGHTS, CATEGORIES_WITH_HEIGHT } from '@/constants/
 
 interface ProductFormProps {
   initialData?: ProductWithId;
-  onSubmit: (data: any) => Promise<void>;
+  onSubmit: (data: ProductWithId) => Promise<void>;
+  loading?: boolean;
 }
 
-export default function ProductForm({ initialData, onSubmit }: ProductFormProps) {
+interface ApiResponse {
+  product: ProductWithId;
+  relatedProducts: ProductWithId[];
+}
+
+export default function ProductForm({ initialData, onSubmit, loading }: ProductFormProps) {
   const [uploadingStatus, setUploadingStatus] = useState<'idle' | 'uploading' | 'error'>('idle');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedSizes, setSelectedSizes] = useState<{ [key: string]: boolean }>(
@@ -20,12 +26,34 @@ export default function ProductForm({ initialData, onSubmit }: ProductFormProps)
       [size]: initialData?.sizes?.includes(size) || false
     }), {})
   );
+  const onFormSubmit = (data: any) => {
+    handleSizesSubmit();
+    handleHeightsSubmit();
+    setValue('images', images);
+    setValue('colors', colors);
+    
+    // При создании нового товара удаляем _id
+    if (!initialData) {
+      const { _id, ...submitData } = data;
+      onSubmit(submitData);
+    } else {
+      onSubmit(data);
+    }
+  };
   const [selectedHeights, setSelectedHeights] = useState<{ [key: string]: boolean }>(
     HEIGHTS.reduce((acc, height) => ({
       ...acc,
       [height]: initialData?.heights?.includes(height) || false
     }), {})
   );
+
+  const [colors, setColors] = useState<Array<{ name: string; code: string }>>(
+    initialData?.colors || []
+  );
+  const [newColorName, setNewColorName] = useState('');
+  const [newColorCode, setNewColorCode] = useState('#000000');
+  const [images, setImages] = useState<string[]>(initialData?.images || []);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
 
   const { register, handleSubmit, setValue, watch, reset } = useForm<ProductWithId>({
     defaultValues: initialData || {
@@ -49,6 +77,7 @@ export default function ProductForm({ initialData, onSubmit }: ProductFormProps)
 
   useEffect(() => {
     if (initialData) {
+      console.log('[Debug] Setting initial form data:', initialData);
       reset(initialData);
       setColors(initialData.colors || []);
       setImages(initialData.images || []);
@@ -66,14 +95,6 @@ export default function ProductForm({ initialData, onSubmit }: ProductFormProps)
       );
     }
   }, [initialData, reset]);
-
-  const [colors, setColors] = useState<Array<{ name: string; code: string }>>(
-    initialData?.colors || []
-  );
-  const [newColorName, setNewColorName] = useState('');
-  const [newColorCode, setNewColorCode] = useState('#000000');
-  const [images, setImages] = useState<string[]>(initialData?.images || []);
-  const [uploadProgress, setUploadProgress] = useState<number>(0);
 
   const selectedCategory = watch('category');
   const showHeightField = CATEGORIES_WITH_HEIGHT.includes(selectedCategory);
@@ -458,9 +479,10 @@ export default function ProductForm({ initialData, onSubmit }: ProductFormProps)
       <div>
         <button
           type="submit"
-          className="w-full bg-black text-white py-2 px-4 rounded-md hover:bg-gray-800 transition-colors"
+          disabled={loading}
+          className="w-full bg-black text-white py-2 px-4 rounded-md hover:bg-gray-800 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
-          {initialData ? 'Обновить товар' : 'Создать товар'}
+          {loading ? 'Сохранение...' : (initialData ? 'Обновить товар' : 'Создать товар')}
         </button>
       </div>
     </form>

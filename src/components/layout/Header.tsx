@@ -62,7 +62,6 @@ export const Header = () => {
             </Link>
             <Link 
               href="/favorites" className="flex items-center space-x-2 text-gray-700 hover:text-black transition-colors">
-              <HeartIcon className="w-6 h-6" />
               <span>Избранное</span>
             </Link>
             <AuthButton />

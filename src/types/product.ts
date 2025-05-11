@@ -41,7 +41,7 @@ export interface Product {
   updatedAt: string;
 }
 
-export interface ProductWithId extends Product {
+export interface ProductWithId {
   _id: string;
   isFavorite?: boolean;
   name: string;

@@ -3,12 +3,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ProductForm from '../ProductForm';
+import type { Product } from '@/types/product';
 
 export default function NewProductPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (productData: any) => {
+  const handleSubmit = async (productData: Product) => {
     try {
       setLoading(true);
       

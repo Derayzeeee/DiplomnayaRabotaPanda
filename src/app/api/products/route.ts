@@ -63,13 +63,22 @@ export async function POST(request: NextRequest) {
     await dbConnect();
     
     const body = await request.json();
-    const product = await Product.create(body);
+    
+    // Удаляем _id из тела запроса, если он есть
+    const { _id, ...productData } = body;
+    
+    // Создаем новый продукт
+    const product = await Product.create({
+      ...productData,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
     
     return NextResponse.json(product, { status: 201 });
   } catch (error) {
     console.error('Database Error:', error);
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: error instanceof Error ? error.message : 'Internal Server Error' },
       { status: 500 }
     );
   }

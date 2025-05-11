@@ -79,7 +79,6 @@ export default function FavoritesPage() {
           ))}
         </motion.div>
       )}
-      <Footer/>
     </div>
   );
 }

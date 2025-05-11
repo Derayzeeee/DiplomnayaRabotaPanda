@@ -43,7 +43,6 @@ export default async function SalePage() {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }
