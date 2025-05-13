@@ -113,7 +113,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
-                onClick={() => router.push('/profile/orders')}
+                onClick={() => router.push('/orders')}
               >
                 Просмотреть заказы
               </button>

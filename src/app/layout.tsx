@@ -1,39 +1,38 @@
 import type { Metadata } from 'next';
-import { Raleway } from 'next/font/google';
-import { Header } from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import { AuthProvider } from '@/context/AuthContext';
-import { CartProvider } from '@/context/CartContext';
+import { Inter } from 'next/font/google';
 import './globals.css';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
+import { CartProvider } from '@/context/CartContext';
+import { AuthProvider } from '@/context/AuthContext';
 
-const raleway = Raleway({
-  subsets: ['latin'],
-  display: 'swap',
-});
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'ClothingStore',
-  description: 'Магазин одежды',
-}
+  title: 'PandaStore',
+  description: 'Your favorite clothing store',
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
-    <html lang="ru" className={raleway.className}>
-      <body className="min-h-screen flex flex-col">
+    <html lang="en">
+      <body className={inter.className}>
         <AuthProvider>
-          <CartProvider>
+          <div className="min-h-screen flex flex-col">
             <Header />
-            <main className="flex-grow pt-20">
-              {children}
+            <main className="flex-grow">
+              <CartProvider>
+                {children}
+              </CartProvider>
             </main>
             <Footer />
-          </CartProvider>
+          </div>
         </AuthProvider>
       </body>
     </html>
-  )
+  );
 }

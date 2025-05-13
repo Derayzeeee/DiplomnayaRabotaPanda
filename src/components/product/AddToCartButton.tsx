@@ -1,69 +1,83 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
-import type { ProductWithId } from '@/types/product';
+import type { Color } from '@/types/product';
 
 interface AddToCartButtonProps {
-  product: ProductWithId;
-  selectedSize?: string;
-  selectedColor?: { name: string; code: string };
-  quantity?: number;
+  productId: string;
+  name: string;
+  price: number;
+  oldPrice?: number;
+  image: string;
+  selectedSize: string;
+  selectedColor: Color;
 }
 
 export default function AddToCartButton({
-  product,
+  productId,
+  name,
+  price,
+  oldPrice,
+  image,
   selectedSize,
   selectedColor,
-  quantity = 1
 }: AddToCartButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const { addItem } = useCart();
 
+  // Если пользователь не авторизован, показываем кнопку для входа
+  if (!isAuthenticated) {
+    return (
+      <button
+        onClick={() => router.push('/login')}
+        className="w-full py-3 rounded-lg bg-gray-500 text-white hover:bg-gray-600 transition-colors"
+      >
+        Войдите в аккаунт чтобы добавить товар в корзину
+      </button>
+    );
+  }
+
+  // Обработчик для авторизованного пользователя
   const handleAddToCart = async () => {
     if (!selectedSize || !selectedColor) {
       alert('Пожалуйста, выберите размер и цвет');
       return;
     }
 
-    setIsLoading(true);
     try {
-      addItem({
-        productId: product._id,
-        name: product.name,
-        price: product.price,
-        oldPrice: product.oldPrice,
-        image: product.images[0],
+      setIsLoading(true);
+      await addItem({
+        productId,
+        name,
+        price,
+        oldPrice,
+        image,
         size: selectedSize,
         color: selectedColor,
-        quantity,
+        quantity: 1
       });
-      // Можно добавить уведомление об успешном добавлении
+      alert('Товар успешно добавлен в корзину!');
     } catch (error) {
-      console.error('Error adding to cart:', error);
-      alert('Произошла ошибка при добавлении товара в корзину');
+      console.error('Failed to add item to cart:', error);
+      alert('Не удалось добавить товар в корзину');
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Кнопка для авторизованного пользователя
   return (
     <button
       onClick={handleAddToCart}
-      disabled={isLoading || !product.inStock}
-      className={`w-full flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white ${
-        product.inStock
-          ? 'bg-black hover:bg-gray-800'
-          : 'bg-gray-400 cursor-not-allowed'
-      } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+      disabled={isLoading}
+      className="w-full py-3 rounded-lg bg-black text-white hover:bg-gray-800 disabled:bg-gray-400 transition-colors"
     >
-      {isLoading ? (
-        'Добавление...'
-      ) : product.inStock ? (
-        'Добавить в корзину'
-      ) : (
-        'Нет в наличии'
-      )}
+      {isLoading ? 'Добавление...' : 'Добавить в корзину'}
     </button>
   );
 }

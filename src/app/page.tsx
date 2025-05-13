@@ -24,49 +24,18 @@ export default function Home() {
               priority
             />
             {/* Затемнение */}
-            <div className="absolute inset-0 bg-black bg-opacity-40" />
+           
           </div>
 
           {/* Контент */}
           <div className="relative h-full flex items-center justify-center">
             <div className="text-center space-y-8 px-4">
-              <MotionDiv
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-              >
-                <h1 className="text-4xl md:text-6xl font-bold text-white">
-                  Добро пожаловать в ClothingStore
-                </h1>
-              </MotionDiv>
-              
-              <MotionP 
-                className="text-xl md:text-2xl text-gray-200 max-w-2xl mx-auto"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-              >
-                Откройте для себя новую коллекцию стильной одежды
-              </MotionP>
-              
               <MotionDiv 
                 className="flex flex-wrap justify-center gap-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
               >
-                <Link 
-                  href="/catalog"
-                  className="px-8 py-3 bg-white text-gray-900 rounded-md font-medium hover:bg-gray-100 transition-colors"
-                >
-                  Каталог →
-                </Link>
-                <Link 
-                  href="/new"
-                  className="px-8 py-3 bg-black text-white rounded-md font-medium hover:bg-gray-900 transition-colors"
-                >
-                  Новинки
-                </Link>
               </MotionDiv>
             </div>
           </div>

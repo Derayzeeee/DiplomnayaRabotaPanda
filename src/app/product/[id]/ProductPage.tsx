@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { notFound } from 'next/navigation';
+import { notFound, useRouter } from 'next/navigation';
 import type { ProductWithId, Color } from '@/types/product';
 import ProductGallery from '@/components/product/ProductGallery';
 import SizeSelector from '@/components/product/SizeSelector';
@@ -13,6 +13,7 @@ import Loading from './loading';
 import Footer from '@/components/layout/Footer';
 import RelatedProducts from './RelatedProducts';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import { CATEGORIES_WITH_HEIGHT } from '@/constants/filters';
 
 interface ProductPageProps {
@@ -26,7 +27,10 @@ export default function ProductPage({ id }: ProductPageProps) {
   const [selectedColor, setSelectedColor] = useState<Color | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
   const { addItem } = useCart();
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -50,24 +54,36 @@ export default function ProductPage({ id }: ProductPageProps) {
     fetchProduct();
   }, [id]);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+
     if (!product || !selectedSize || !selectedColor) {
       alert('Пожалуйста, выберите размер и цвет');
       return;
     }
 
-    addItem({
-      productId: product._id,
-      name: product.name,
-      price: product.price,
-      oldPrice: product.oldPrice,
-      image: product.images[0],
-      size: selectedSize,
-      color: selectedColor,
-      quantity,
-    });
-
-    alert('Товар добавлен в корзину');
+    try {
+      setIsAddingToCart(true);
+      await addItem({
+        productId: product._id,
+        name: product.name,
+        price: product.price,
+        oldPrice: product.oldPrice,
+        image: product.images[0],
+        size: selectedSize,
+        color: selectedColor,
+        quantity,
+      });
+      alert('Товар добавлен в корзину');
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      alert('Не удалось добавить товар в корзину');
+    } finally {
+      setIsAddingToCart(false);
+    }
   };
 
   if (isLoading) {
@@ -99,17 +115,17 @@ export default function ProductPage({ id }: ProductPageProps) {
                   {product.isSale ? (
                     <>
                       <span className="text-2xl font-bold text-red-600">
-                        {product.price.toLocaleString('ru-RU')} ₽
+                        {product.price.toLocaleString('ru-RU')} BYN
                       </span>
                       {product.oldPrice && (
                         <span className="text-xl text-gray-500 line-through">
-                          {product.oldPrice.toLocaleString('ru-RU')} ₽
+                          {product.oldPrice.toLocaleString('ru-RU')} BYN
                         </span>
                       )}
                     </>
                   ) : (
                     <span className="text-2xl font-bold text-gray-900">
-                      {product.price.toLocaleString('ru-RU')} ₽
+                      {product.price.toLocaleString('ru-RU')} BYN
                     </span>
                   )}
                 </div>
@@ -182,14 +198,22 @@ export default function ProductPage({ id }: ProductPageProps) {
                 </div>
                 <button
                   onClick={handleAddToCart}
-                  disabled={!product.inStock || !selectedSize || !selectedColor}
+                  disabled={!product.inStock || (!isAuthenticated && true) || !selectedSize || !selectedColor || isAddingToCart}
                   className={`flex-1 px-6 py-3 rounded-md text-white transition-colors ${
-                    product.inStock && selectedSize && selectedColor
+                    !isAuthenticated
+                      ? 'bg-gray-500 hover:bg-gray-600'
+                      : product.inStock && selectedSize && selectedColor
                       ? 'bg-black hover:bg-gray-800'
                       : 'bg-gray-400 cursor-not-allowed'
                   }`}
                 >
-                  {product.inStock ? 'Добавить в корзину' : 'Нет в наличии'}
+                  {!isAuthenticated
+                    ? 'Войдите в аккаунт чтобы добавить товар в корзину'
+                    : !product.inStock
+                    ? 'Нет в наличии'
+                    : isAddingToCart
+                    ? 'Добавление...'
+                    : 'Добавить в корзину'}
                 </button>
               </div>
             </div>
@@ -200,7 +224,7 @@ export default function ProductPage({ id }: ProductPageProps) {
               <div>
                 <h3 className="text-sm font-medium text-gray-900">Доставка</h3>
                 <p className="mt-2 text-sm text-gray-600">
-                  1-3 рабочих дня. Бесплатная доставка при заказе от 5000 ₽
+                  1-3 рабочих дня. Бесплатная доставка при заказе от 5000 BYN
                 </p>
               </div>
               
@@ -217,7 +241,7 @@ export default function ProductPage({ id }: ProductPageProps) {
                 <div>
                   <h3 className="text-sm font-medium text-gray-900">Рост</h3>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {product.heights.map((height: string) => ( // Добавляем явную типизацию
+                    {product.heights.map((height: string) => (
                       <span
                         key={height}
                         className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"

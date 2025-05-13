@@ -25,6 +25,7 @@ export interface MongoProduct {
 
 
 export interface Product {
+  id: string;
   name: string;
   description: string;
   price: number;
@@ -58,4 +59,5 @@ export interface ProductWithId {
   inStock: boolean;
   createdAt: string;
   updatedAt: string;
+  salePrice: string;
 }

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // Массив защищенных путей
-const protectedRoutes = ['/profile', '/orders', '/wishlist'];
+const protectedRoutes = ['/profile', '/orders', '/favorites', '/cart'];
 
 export function middleware(request: NextRequest) {
   const token = request.cookies.get('token');

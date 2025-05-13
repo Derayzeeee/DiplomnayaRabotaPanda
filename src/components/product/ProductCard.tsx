@@ -63,15 +63,15 @@ export default function ProductCard({ product, onFavoriteChange }: ProductCardPr
           {product.isSale && product.oldPrice ? (
             <>
               <span className="text-lg font-bold text-red-600">
-                {product.price} ₽
+                {product.price} BYN
               </span>
               <span className="text-sm text-gray-500 line-through">
-                {product.oldPrice} ₽
+                {product.oldPrice} BYN
               </span>
             </>
           ) : (
             <span className="text-lg font-bold text-gray-900">
-              {product.price} ₽
+              {product.price} BYN
             </span>
           )}
         </div>

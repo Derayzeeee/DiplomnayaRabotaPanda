@@ -47,15 +47,15 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           {product.isSale && product.salePrice ? (
             <>
               <span className="text-3xl font-bold text-red-600">
-                {product.salePrice} ₽
+                {product.salePrice} BYN
               </span>
               <span className="text-xl text-gray-500 line-through">
-                {product.price} ₽
+                {product.price} BYN
               </span>
             </>
           ) : (
             <span className="text-3xl font-bold text-gray-900">
-              {product.price} ₽
+              {product.price} BYN
             </span>
           )}
         </div>

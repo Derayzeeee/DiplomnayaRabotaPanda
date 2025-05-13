@@ -11,7 +11,7 @@ export default function SizeChart() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="text-sm text-gray-600 hover:text-gray-900 underline"
+        className="text-sm text-gray-600 hover:text-gray-900"
       >
         Таблица размеров
       </button>
@@ -71,7 +71,7 @@ export default function SizeChart() {
             <div className="mt-6 flex justify-end">
               <button
                 onClick={() => setIsOpen(false)}
-                className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800"
+                className="inline-flex justify-center border border-transparent bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 focus:outline-none"
               >
                 Закрыть
               </button>
