@@ -17,18 +17,21 @@ export async function POST(request: NextRequest) {
 
     await dbConnect();
     
-    // Полностью удаляем корзину пользователя
-    await Cart.findOneAndDelete({ userId: userData.userId });
+    // Получаем данные для обновления
+    const { items, totalAmount } = await request.json();
+    
+    // Находим и обновляем корзину пользователя
+    const updatedCart = await Cart.findOneAndUpdate(
+      { userId: userData.userId },
+      { items, totalAmount },
+      { new: true, upsert: true }
+    );
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Cart cleared successfully',
-      cart: null 
-    });
+    return NextResponse.json(updatedCart);
   } catch (error) {
-    console.error('Error clearing cart:', error);
+    console.error('Error updating cart:', error);
     return NextResponse.json(
-      { error: 'Failed to clear cart' },
+      { error: 'Failed to update cart' },
       { status: 500 }
     );
   }

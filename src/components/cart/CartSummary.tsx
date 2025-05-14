@@ -1,11 +1,21 @@
-'use client';
-
+import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 
 export default function CartSummary() {
+  const router = useRouter();
   const { cart } = useCart();
+  const { isAuthenticated } = useAuth();
 
   if (!cart) return null;
+
+  const handleCheckout = () => {
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+    router.push('/checkout');
+  };
 
   return (
     <div className="bg-white p-6 rounded-lg shadow">
@@ -29,8 +39,8 @@ export default function CartSummary() {
         </div>
       </div>
       <button 
-        className="w-full mt-6 bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 transition-colors"
-        onClick={() => alert('Функционал оформления заказа в разработке')}
+        onClick={handleCheckout}
+        className="w-full mt-6 bg-black text-white py-3 px-4 rounded-md hover:bg-gray-800 transition-colors"
       >
         Оформить заказ
       </button>

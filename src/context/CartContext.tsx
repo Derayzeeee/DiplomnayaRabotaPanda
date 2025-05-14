@@ -6,22 +6,28 @@ import { useAuth } from '@/context/AuthContext';
 import type { Cart, CartItem } from '@/types/cart';
 import type { Color } from '@/types/product';
 
-// Определяем тип контекста корзины
-interface CartContextType {
+
+export const CartContext = createContext<{
   cart: Cart | null;
   isLoading: boolean;
   error: string | null;
   addItem: (item: CartItem) => Promise<void>;
   removeItem: (productId: string, size: string, color: Color) => Promise<void>;
   updateQuantity: (productId: string, size: string, color: Color, quantity: number) => Promise<void>;
-  clearCart: () => Promise<void>;
-}
-
-const CartContext = createContext<CartContextType | undefined>(undefined);
+  clearCart: () => Promise<void>; // Добавляем новую функцию
+}>({
+  cart: null,
+  isLoading: false,
+  error: null,
+  addItem: async () => {},
+  removeItem: async () => {},
+  updateQuantity: async () => {},
+  clearCart: async () => {}, // Добавляем новую функцию
+});
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<Cart | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { isAuthenticated } = useAuth();
@@ -212,37 +218,27 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Функция для очистки корзины
-  const clearCart = async () => {
-    if (!isAuthenticated) {
-      router.push('/login');
-      return;
-    }
-
+   const clearCart = async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      // Оптимистично очищаем UI
-      setCart(null);
-
       const response = await fetch('/api/cart/clear', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
-      if (response.status === 401) {
-        router.push('/login');
-        return;
+      if (!response.ok) {
+        throw new Error('Failed to clear cart');
       }
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to clear cart');
-      }
+      // Очищаем состояние корзины
+      setCart(null);
     } catch (err) {
       console.error('Error clearing cart:', err);
       setError(err instanceof Error ? err.message : 'Failed to clear cart');
-      // В случае ошибки перезагружаем корзину
-      fetchCart();
       throw err;
     } finally {
       setIsLoading(false);
@@ -258,7 +254,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         addItem,
         removeItem,
         updateQuantity,
-        clearCart,
+        clearCart, // Добавляем функцию в провайдер
       }}
     >
       {children}

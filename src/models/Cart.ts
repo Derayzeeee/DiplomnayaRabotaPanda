@@ -21,45 +21,17 @@ interface ICart extends Document {
 }
 
 const cartItemSchema = new Schema<ICartItem>({
-  productId: {
-    type: String,
-    required: true
-  },
-  name: {
-    type: String,
-    required: true
-  },
-  price: {
-    type: Number,
-    required: true
-  },
-  oldPrice: {
-    type: Number
-  },
-  image: {
-    type: String,
-    required: true
-  },
-  size: {
-    type: String,
-    required: true
-  },
+  productId: { type: String, required: true },
+  name: { type: String, required: true },
+  price: { type: Number, required: true },
+  oldPrice: { type: Number },
+  image: { type: String, required: true },
+  size: { type: String, required: true },
   color: {
-    name: {
-      type: String,
-      required: true
-    },
-    code: {
-      type: String,
-      required: true
-    }
+    name: { type: String, required: true },
+    code: { type: String, required: true }
   },
-  quantity: {
-    type: Number,
-    required: true,
-    min: 1,
-    default: 1
-  }
+  quantity: { type: Number, required: true, min: 1 }
 });
 
 const cartSchema = new Schema<ICart>({
@@ -80,15 +52,13 @@ const cartSchema = new Schema<ICart>({
   }
 });
 
-// Метод для подсчета общей суммы
-cartSchema.methods.calculateTotal = function(this: ICart): void {
-  this.totalAmount = this.items.reduce((total: number, item: ICartItem) => {
+cartSchema.methods.calculateTotal = function(this: ICart) {
+  this.totalAmount = this.items.reduce((total, item) => {
     return total + (item.price * item.quantity);
   }, 0);
 };
 
-// Пре-сохранение для обновления общей суммы
-cartSchema.pre('save', function(this: ICart, next: () => void) {
+cartSchema.pre('save', function(this: ICart, next) {
   this.calculateTotal();
   this.updatedAt = new Date();
   next();

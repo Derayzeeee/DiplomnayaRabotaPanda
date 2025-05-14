@@ -61,8 +61,16 @@ export const Header = () => {
               Распродажа
             </Link>
             <Link 
-              href="/favorites" className="flex items-center space-x-2 text-gray-700 hover:text-black transition-colors">
-              <span>Избранное</span>
+                href="/favorites" 
+                className="text-gray-700 hover:text-black transition-colors"
+            >
+              Избранное
+            </Link>
+            <Link 
+              href="/cart" 
+              className="text-gray-700 hover:text-black transition-colors"
+            >
+              Корзина
             </Link>
             <AuthButton />
           </div>

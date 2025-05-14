@@ -43,7 +43,6 @@ export default async function NewProductsPage() {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }
