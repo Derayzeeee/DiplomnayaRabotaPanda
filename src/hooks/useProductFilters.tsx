@@ -28,8 +28,17 @@ export function useProductFilters(initialProducts: ProductWithId[]) {
         return false;
       }
 
-      // Проверка цветов
-      if (activeFilters.colors.length > 0 && !product.colors.some(color => activeFilters.colors.includes(color.code))) {
+      // Проверка цветов (product.color может быть undefined)
+      if (
+        activeFilters.colors.length > 0 &&
+        !(
+          product.color &&
+          typeof product.color.code === "string" &&
+          activeFilters.colors
+            .map(c => c.toLowerCase())
+            .includes(product.color.code.toLowerCase())
+        )
+      ) {
         return false;
       }
 

@@ -13,11 +13,13 @@ interface ProductListProps {
     categories: string[];
     sizes: string[];
     colors: string[];
+    heights?: string[];
   };
   onFilteredCountChange?: (count: number) => void;
+  setColors?: (colors: Array<{ name: string; code: string }>) => void;
 }
 
-export default function ProductList({ initialFilters, onFilteredCountChange }: ProductListProps) {
+export default function ProductList({ initialFilters, onFilteredCountChange, setColors }: ProductListProps) {
   const [products, setProducts] = useState<ProductWithId[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [loading, setLoading] = useState(true);
@@ -26,6 +28,7 @@ export default function ProductList({ initialFilters, onFilteredCountChange }: P
 
   useEffect(() => {
     fetchProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -38,11 +41,23 @@ export default function ProductList({ initialFilters, onFilteredCountChange }: P
     try {
       const response = await fetch('/api/products');
       const data = await response.json();
-      const productsWithStringId = data.map((product: any) => ({
+      const productsWithStringId: ProductWithId[] = data.map((product: any) => ({
         ...product,
         _id: product._id.toString()
       }));
       setProducts(productsWithStringId);
+
+      // Формируем уникальные цвета и передаём их в setColors
+      if (setColors) {
+        const uniqueColors: { name: string; code: string }[] = Array.from(
+          new Map(
+            productsWithStringId
+              .filter((product: ProductWithId) => product.color && product.color.code)
+              .map((product: ProductWithId) => [product.color.code, product.color])
+          ).values()
+        );
+        setColors(uniqueColors);
+      }
     } catch (err) {
       console.error('Failed to fetch products:', err);
     } finally {
@@ -125,7 +140,7 @@ export default function ProductList({ initialFilters, onFilteredCountChange }: P
           }
         }}
       >
-        {sortedProducts.map((product) => (
+        {sortedProducts.map((product: ProductWithId) => (
           <motion.div
             key={product._id}
             variants={{

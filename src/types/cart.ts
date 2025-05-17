@@ -7,7 +7,7 @@ export interface CartItem {
   oldPrice?: number;
   image: string;
   size: string;
-  color: Color;
+  color: Color; // теперь только один цвет
   quantity: number;
 }
 

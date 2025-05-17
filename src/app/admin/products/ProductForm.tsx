@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import Image from 'next/image';
+import { HexColorPicker } from 'react-colorful';
 import type { ProductWithId } from '@/types/product';
 import { CATEGORIES, SIZES, HEIGHTS, CATEGORIES_WITH_HEIGHT } from '@/constants/filters';
 
@@ -10,11 +11,6 @@ interface ProductFormProps {
   initialData?: ProductWithId;
   onSubmit: (data: ProductWithId) => Promise<void>;
   loading?: boolean;
-}
-
-interface ApiResponse {
-  product: ProductWithId;
-  relatedProducts: ProductWithId[];
 }
 
 export default function ProductForm({ initialData, onSubmit, loading }: ProductFormProps) {
@@ -26,20 +22,6 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
       [size]: initialData?.sizes?.includes(size) || false
     }), {})
   );
-  const onFormSubmit = (data: any) => {
-    handleSizesSubmit();
-    handleHeightsSubmit();
-    setValue('images', images);
-    setValue('colors', colors);
-    
-    // При создании нового товара удаляем _id
-    if (!initialData) {
-      const { _id, ...submitData } = data;
-      onSubmit(submitData);
-    } else {
-      onSubmit(data);
-    }
-  };
   const [selectedHeights, setSelectedHeights] = useState<{ [key: string]: boolean }>(
     HEIGHTS.reduce((acc, height) => ({
       ...acc,
@@ -47,11 +29,10 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
     }), {})
   );
 
-  const [colors, setColors] = useState<Array<{ name: string; code: string }>>(
-    initialData?.colors || []
+  // Новый state для ОДНОГО цвета!
+  const [color, setColor] = useState<{ name: string; code: string }>(
+    initialData?.color || { name: '', code: '#000000' }
   );
-  const [newColorName, setNewColorName] = useState('');
-  const [newColorCode, setNewColorCode] = useState('#000000');
   const [images, setImages] = useState<string[]>(initialData?.images || []);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
 
@@ -65,21 +46,21 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
       category: '',
       sizes: [],
       heights: [],
-      colors: [],
+      color: { name: '', code: '#000000' },
       images: [],
       isNewProduct: false,
       isSale: false,
       inStock: true,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
+      salePrice: '',
     }
   });
 
   useEffect(() => {
     if (initialData) {
-      console.log('[Debug] Setting initial form data:', initialData);
       reset(initialData);
-      setColors(initialData.colors || []);
+      setColor(initialData.color || { name: '', code: '#000000' });
       setImages(initialData.images || []);
       setSelectedSizes(
         SIZES.reduce((acc, size) => ({
@@ -101,21 +82,9 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
   const isSale = watch('isSale');
 
   useEffect(() => {
-    setValue('colors', colors);
+    setValue('color', color);
     setValue('images', images);
-  }, [colors, images, setValue]);
-
-  const addColor = () => {
-    if (newColorName && newColorCode) {
-      setColors([...colors, { name: newColorName, code: newColorCode }]);
-      setNewColorName('');
-      setNewColorCode('#000000');
-    }
-  };
-
-  const removeColor = (index: number) => {
-    setColors(colors.filter((_, i) => i !== index));
-  };
+  }, [color, images, setValue]);
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -193,6 +162,22 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
       ...prev,
       [height]: !prev[height]
     }));
+  };
+
+  // Новый submit: color вместо colors
+  const onFormSubmit = (data: any) => {
+    handleSizesSubmit();
+    handleHeightsSubmit();
+    setValue('images', images);
+    setValue('color', color);
+
+    // При создании нового товара удаляем _id
+    if (!initialData) {
+      const { _id, ...submitData } = data;
+      onSubmit(submitData);
+    } else {
+      onSubmit(data);
+    }
   };
 
   return (
@@ -350,49 +335,28 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
 
       {/* Цвета */}
       <div className="space-y-4">
-        <h3 className="text-lg font-medium">Цвета</h3>
-        <div className="flex gap-4">
+        <h3 className="text-lg font-medium">Цвет</h3>
+        <div className="flex flex-col gap-2 max-w-xs">
           <input
             type="text"
-            value={newColorName}
-            onChange={(e) => setNewColorName(e.target.value)}
+            value={color.name}
+            onChange={e => setColor({ ...color, name: e.target.value })}
             placeholder="Название цвета"
-            className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+            className="rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
           />
-          <input
-            type="color"
-            value={newColorCode}
-            onChange={(e) => setNewColorCode(e.target.value)}
-            className="h-10 w-20"
+          {/* Палитра */}
+          <HexColorPicker
+            color={color.code}
+            onChange={code => setColor({ ...color, code })}
+            style={{ width: 200, height: 200 }}
           />
-          <button
-            type="button"
-            onClick={addColor}
-            className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800"
-          >
-            Добавить
-          </button>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {colors.map((color, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full"
-            >
-              <span
-                className="w-4 h-4 rounded-full"
-                style={{ backgroundColor: color.code }}
-              />
-              <span>{color.name}</span>
-              <button
-                type="button"
-                onClick={() => removeColor(index)}
-                className="text-red-500 hover:text-red-700"
-              >
-                ×
-              </button>
-            </div>
-          ))}
+          <div className="flex items-center mt-2">
+            <span
+              className="w-8 h-8 rounded-full border"
+              style={{ backgroundColor: color.code }}
+            />
+            <span className="ml-2 text-sm">{color.code}</span>
+          </div>
         </div>
       </div>
 

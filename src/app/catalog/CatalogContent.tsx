@@ -3,30 +3,31 @@
 import { useState } from 'react';
 import FilterWrapper from '@/components/catalog/FilterWrapper';
 import ProductList from './ProductList';
-
-interface Color {
-  name: string;
-  code: string;
-}
+import type { ProductWithId, Color } from '@/types/product';
 
 interface CatalogContentProps {
+  products?: ProductWithId[];
   categories: string[];
   sizes: string[];
-  colors: Color[];
 }
 
-export default function CatalogContent({ categories, sizes, colors }: CatalogContentProps) {
+export default function CatalogContent({ products = [], categories, sizes }: CatalogContentProps) {
+  const uniqueColors: Color[] = Array.from(
+    new Map(
+      products
+        .filter(product => product.color && product.color.code)
+        .map(product => [product.color.code, product.color])
+    ).values()
+  );
+
   const [filters, setFilters] = useState({
     categories: [] as string[],
     sizes: [] as string[],
     colors: [] as string[],
+    heights: [] as string[],
   });
 
-  const handleFiltersChange = (newFilters: {
-    categories: string[];
-    sizes: string[];
-    colors: string[];
-  }) => {
+  const handleFiltersChange = (newFilters: typeof filters) => {
     setFilters(newFilters);
   };
 
@@ -36,11 +37,9 @@ export default function CatalogContent({ categories, sizes, colors }: CatalogCon
         <FilterWrapper
           categories={categories}
           sizes={sizes}
-          colors={colors}
           onFiltersChange={handleFiltersChange}
         />
       </aside>
-
       <div className="flex-1">
         <ProductList initialFilters={filters} />
       </div>

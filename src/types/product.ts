@@ -14,15 +14,14 @@ export interface MongoProduct {
   images: string[];
   category: string;
   sizes: string[];
-  colors: Array<{ name: string; code: string }>;
+  color: { name: string; code: string };
   isNewProduct: boolean;
   isSale: boolean;
   inStock: boolean;
   createdAt: Date;
   updatedAt: Date;
-  __v: number; // Версия документа, добавляемая MongoDB
+  __v: number;
 }
-
 
 export interface Product {
   id: string;
@@ -33,7 +32,7 @@ export interface Product {
   category: string;
   sizes: string[];
   heights?: string[];
-  colors: Color[];
+  color: Color;
   images: string[];
   isNewProduct?: boolean;
   isSale?: boolean;
@@ -52,7 +51,7 @@ export interface ProductWithId {
   category: string;
   sizes: string[];
   heights?: string[];
-  colors: Array<{ name: string; code: string }>;
+  color: { name: string; code: string };
   images: string[];
   isNewProduct: boolean;
   isSale: boolean;

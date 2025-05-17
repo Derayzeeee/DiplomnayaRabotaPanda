@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { notFound, useRouter } from 'next/navigation';
-import type { ProductWithId, Color } from '@/types/product';
+import type { ProductWithId } from '@/types/product';
 import ProductGallery from '@/components/product/ProductGallery';
 import SizeSelector from '@/components/product/SizeSelector';
-import ColorSelector from '@/components/product/ColorSelector';
 import AddToCartButton from '@/components/product/AddToCartButton';
 import FavoriteButton from '@/components/product/FavoriteButton';
 import SizeChart from '@/components/common/SizeChart';
@@ -24,7 +23,6 @@ export default function ProductPage({ id }: ProductPageProps) {
   const [product, setProduct] = useState<ProductWithId | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<ProductWithId[]>([]);
   const [selectedSize, setSelectedSize] = useState<string>('');
-  const [selectedColor, setSelectedColor] = useState<Color | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
@@ -39,7 +37,6 @@ export default function ProductPage({ id }: ProductPageProps) {
         if (!response.ok) {
           throw new Error('Failed to fetch product');
         }
-
         const data = await response.json();
         setProduct(data.product);
         setRelatedProducts(data.relatedProducts || []);
@@ -50,7 +47,6 @@ export default function ProductPage({ id }: ProductPageProps) {
         setIsLoading(false);
       }
     };
-
     fetchProduct();
   }, [id]);
 
@@ -59,12 +55,10 @@ export default function ProductPage({ id }: ProductPageProps) {
       router.push('/login');
       return;
     }
-
-    if (!product || !selectedSize || !selectedColor) {
-      alert('Пожалуйста, выберите размер и цвет');
+    if (!product || !selectedSize) {
+      alert('Пожалуйста, выберите размер');
       return;
     }
-
     try {
       setIsAddingToCart(true);
       await addItem({
@@ -74,7 +68,7 @@ export default function ProductPage({ id }: ProductPageProps) {
         oldPrice: product.oldPrice,
         image: product.images[0],
         size: selectedSize,
-        color: selectedColor,
+        color: product.color, // теперь только один цвет!
         quantity,
       });
       alert('Товар добавлен в корзину');
@@ -86,13 +80,8 @@ export default function ProductPage({ id }: ProductPageProps) {
     }
   };
 
-  if (isLoading) {
-    return <Loading />;
-  }
-
-  if (!product) {
-    return notFound();
-  }
+  if (isLoading) return <Loading />;
+  if (!product) return notFound();
 
   const showHeightInfo = CATEGORIES_WITH_HEIGHT.includes(product.category);
 
@@ -155,7 +144,7 @@ export default function ProductPage({ id }: ProductPageProps) {
               <p>{product.description}</p>
             </div>
 
-            {/* Выбор размера, цвета и количества */}
+            {/* Выбор размера и количества */}
             <div className="space-y-4">
               {/* Размеры и таблица размеров */}
               <div>
@@ -170,12 +159,18 @@ export default function ProductPage({ id }: ProductPageProps) {
                 />
               </div>
 
-              {/* Цвета */}
-              <ColorSelector 
-                colors={product.colors}
-                selectedColor={selectedColor}
-                onSelect={setSelectedColor}
-              />
+              {/* Цвет */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-900">Цвет</h3>
+                <div className="flex items-center gap-2 mt-2">
+                  <span
+                    className="w-8 h-8 rounded-full border"
+                    style={{ backgroundColor: product.color.code }}
+                    title={product.color.name}
+                  />
+                  <span className="text-sm">{product.color.name}</span>
+                </div>
+              </div>
 
               {/* Количество и кнопка добавления в корзину */}
               <div className="flex items-center gap-4">
@@ -198,22 +193,27 @@ export default function ProductPage({ id }: ProductPageProps) {
                 </div>
                 <button
                   onClick={handleAddToCart}
-                  disabled={!product.inStock || (!isAuthenticated && true) || !selectedSize || !selectedColor || isAddingToCart}
+                  disabled={
+                    !product.inStock ||
+                    !isAuthenticated ||
+                    !selectedSize ||
+                    isAddingToCart
+                  }
                   className={`flex-1 px-6 py-3 rounded-md text-white transition-colors ${
                     !isAuthenticated
                       ? 'bg-gray-500 hover:bg-gray-600'
-                      : product.inStock && selectedSize && selectedColor
-                      ? 'bg-black hover:bg-gray-800'
-                      : 'bg-gray-400 cursor-not-allowed'
+                      : product.inStock && selectedSize
+                        ? 'bg-black hover:bg-gray-800'
+                        : 'bg-gray-400 cursor-not-allowed'
                   }`}
                 >
                   {!isAuthenticated
                     ? 'Войдите в аккаунт чтобы добавить товар в корзину'
                     : !product.inStock
-                    ? 'Нет в наличии'
-                    : isAddingToCart
-                    ? 'Добавление...'
-                    : 'Добавить в корзину'}
+                      ? 'Нет в наличии'
+                      : isAddingToCart
+                        ? 'Добавление...'
+                        : 'Добавить в корзину'}
                 </button>
               </div>
             </div>
@@ -274,6 +274,7 @@ export default function ProductPage({ id }: ProductPageProps) {
           </div>
         )}
       </main>
+      <Footer />
     </div>
   );
 }

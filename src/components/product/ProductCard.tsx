@@ -76,23 +76,19 @@ export default function ProductCard({ product, onFavoriteChange }: ProductCardPr
           )}
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex -space-x-1">
-            {product.colors.slice(0, 3).map((color) => (
+          {/* Цвет (только один) */}
+          {product.color && product.color.code ? (
+            <div className="flex items-center gap-1">
               <div
-                key={color.code}
                 className="w-4 h-4 rounded-full border-2 border-white ring-1 ring-gray-200"
-                style={{ backgroundColor: color.code }}
-                title={color.name}
+                style={{ backgroundColor: product.color.code }}
+                title={product.color.name}
               />
-            ))}
-            {product.colors.length > 3 && (
-              <div className="w-4 h-4 rounded-full bg-gray-100 border-2 border-white ring-1 ring-gray-200 flex items-center justify-center">
-                <span className="text-[8px] font-medium text-gray-600">
-                  +{product.colors.length - 3}
-                </span>
-              </div>
-            )}
-          </div>
+              <span className="text-xs text-gray-600">{product.color.name}</span>
+            </div>
+          ) : (
+            <span className="text-xs text-gray-400">Нет цвета</span>
+          )}
           <div className="text-sm text-gray-500">
             {product.sizes.length} {product.sizes.length === 1 ? 'размер' : 'размеров'}
           </div>
