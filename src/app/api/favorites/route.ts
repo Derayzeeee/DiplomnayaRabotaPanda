@@ -19,16 +19,22 @@ export async function GET(req: NextRequest) {
       .populate('productId')
       .lean();
 
-    const products = favorites.map(fav => ({
-      ...fav.productId,
-      _id: fav.productId._id.toString(),
-      isFavorite: true
-    }));
+    // Фильтруем записи с null productId и преобразуем остальные
+    const products = favorites
+      .filter(fav => fav.productId && fav.productId._id) // добавляем проверку
+      .map(fav => ({
+        ...fav.productId,
+        _id: fav.productId._id.toString(),
+        isFavorite: true
+      }));
 
     return NextResponse.json(products);
   } catch (error) {
     console.error('Failed to fetch favorites:', error);
-    return NextResponse.json({ error: 'Failed to fetch favorites' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch favorites' }, 
+      { status: 500 }
+    );
   }
 }
 
@@ -48,7 +54,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
     }
 
-    // Проверяем существование продукта
+    // Проверяем существование продукта перед добавлением в избранное
     const product = await Product.findById(productId);
     if (!product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
@@ -73,8 +79,19 @@ export async function POST(req: NextRequest) {
       productId
     });
 
+    await favorite.populate('productId'); // Добавляем populate при создании
+
     return NextResponse.json(
-      { success: true, favorite: favorite.toObject() },
+      { 
+        success: true, 
+        favorite: {
+          ...favorite.toObject(),
+          productId: {
+            ...favorite.productId.toObject(),
+            _id: favorite.productId._id.toString()
+          }
+        }
+      },
       { status: 201 }
     );
   } catch (error) {

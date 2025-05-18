@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import Image from 'next/image';
 import { HexColorPicker } from 'react-colorful';
-import type { ProductWithId } from '@/types/product';
+import type { ProductWithId, Color } from '@/types/product';
 import { CATEGORIES, SIZES, HEIGHTS, CATEGORIES_WITH_HEIGHT } from '@/constants/filters';
 
 interface ProductFormProps {
@@ -16,12 +16,16 @@ interface ProductFormProps {
 export default function ProductForm({ initialData, onSubmit, loading }: ProductFormProps) {
   const [uploadingStatus, setUploadingStatus] = useState<'idle' | 'uploading' | 'error'>('idle');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  
+  // Состояния для размеров и роста
   const [selectedSizes, setSelectedSizes] = useState<{ [key: string]: boolean }>(
     SIZES.reduce((acc, size) => ({
       ...acc,
       [size]: initialData?.sizes?.includes(size) || false
     }), {})
   );
+
   const [selectedHeights, setSelectedHeights] = useState<{ [key: string]: boolean }>(
     HEIGHTS.reduce((acc, height) => ({
       ...acc,
@@ -29,13 +33,13 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
     }), {})
   );
 
-  // Новый state для ОДНОГО цвета!
-  const [color, setColor] = useState<{ name: string; code: string }>(
+  // Состояние для цвета и изображений
+  const [color, setColor] = useState<Color>(
     initialData?.color || { name: '', code: '#000000' }
   );
   const [images, setImages] = useState<string[]>(initialData?.images || []);
-  const [uploadProgress, setUploadProgress] = useState<number>(0);
 
+  // React Hook Form
   const { register, handleSubmit, setValue, watch, reset } = useForm<ProductWithId>({
     defaultValues: initialData || {
       _id: '',
@@ -52,15 +56,20 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
       isSale: false,
       inStock: true,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      salePrice: '',
+      updatedAt: new Date().toISOString()
     }
   });
 
+  // Наблюдаем за выбранной категорией и статусом скидки
+  const selectedCategory = watch('category');
+  const showHeightField = CATEGORIES_WITH_HEIGHT.includes(selectedCategory);
+  const isSale = watch('isSale');
+
+  // Эффекты
   useEffect(() => {
     if (initialData) {
       reset(initialData);
-      setColor(initialData.color || { name: '', code: '#000000' });
+      setColor(initialData.color);
       setImages(initialData.images || []);
       setSelectedSizes(
         SIZES.reduce((acc, size) => ({
@@ -77,15 +86,12 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
     }
   }, [initialData, reset]);
 
-  const selectedCategory = watch('category');
-  const showHeightField = CATEGORIES_WITH_HEIGHT.includes(selectedCategory);
-  const isSale = watch('isSale');
-
   useEffect(() => {
     setValue('color', color);
     setValue('images', images);
   }, [color, images, setValue]);
 
+  // Обработчики
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
@@ -136,20 +142,6 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
     setImages(images.filter((_, i) => i !== index));
   };
 
-  const handleSizesSubmit = () => {
-    const selectedSizesList = Object.entries(selectedSizes)
-      .filter(([_, isSelected]) => isSelected)
-      .map(([size]) => size);
-    setValue('sizes', selectedSizesList);
-  };
-
-  const handleHeightsSubmit = () => {
-    const selectedHeightsList = Object.entries(selectedHeights)
-      .filter(([_, isSelected]) => isSelected)
-      .map(([height]) => height);
-    setValue('heights', selectedHeightsList);
-  };
-
   const toggleSize = (size: string) => {
     setSelectedSizes(prev => ({
       ...prev,
@@ -164,24 +156,33 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
     }));
   };
 
-  // Новый submit: color вместо colors
-  const onFormSubmit = (data: any) => {
-    handleSizesSubmit();
-    handleHeightsSubmit();
-    setValue('images', images);
-    setValue('color', color);
+  // Обработчик отправки формы
+  const onFormSubmit = handleSubmit((data: ProductWithId) => {
+    // Подготавливаем финальные данные
+    const finalData = {
+      ...data,
+      _id: initialData?._id || '',
+      images,
+      color,
+      sizes: Object.entries(selectedSizes)
+        .filter(([_, isSelected]) => isSelected)
+        .map(([size]) => size),
+      heights: Object.entries(selectedHeights)
+        .filter(([_, isSelected]) => isSelected)
+        .map(([height]) => height)
+    };
 
-    // При создании нового товара удаляем _id
+    // Удаляем _id при создании нового товара
     if (!initialData) {
-      const { _id, ...submitData } = data;
-      onSubmit(submitData);
+      const { _id, id, ...submitData } = finalData;
+      onSubmit(submitData as ProductWithId);
     } else {
-      onSubmit(data);
+      onSubmit(finalData);
     }
-  };
+  });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={onFormSubmit} className="space-y-6">
       {/* Основные данные */}
       <div className="space-y-4">
         <div>
@@ -274,27 +275,10 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
               </label>
             ))}
           </div>
-          <button
-            type="button"
-            onClick={handleSizesSubmit}
-            className="mt-4 w-full bg-black text-white py-2 px-4 rounded-md hover:bg-gray-800"
-          >
-            Применить размеры
-          </button>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {watch('sizes')?.map((size) => (
-            <span
-              key={size}
-              className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100"
-            >
-              {size}
-            </span>
-          ))}
         </div>
       </div>
 
-      {/* Рост */}
+      {/* Рост (если применимо) */}
       {showHeightField && (
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Рост</h3>
@@ -312,28 +296,11 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
                 </label>
               ))}
             </div>
-            <button
-              type="button"
-              onClick={handleHeightsSubmit}
-              className="mt-4 w-full bg-black text-white py-2 px-4 rounded-md hover:bg-gray-800"
-            >
-              Применить рост
-            </button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {watch('heights')?.map((height) => (
-              <span
-                key={height}
-                className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100"
-              >
-                {height} см
-              </span>
-            ))}
           </div>
         </div>
       )}
 
-      {/* Цвета */}
+      {/* Цвет */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium">Цвет</h3>
         <div className="flex flex-col gap-2 max-w-xs">
@@ -341,10 +308,10 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
             type="text"
             value={color.name}
             onChange={e => setColor({ ...color, name: e.target.value })}
-            placeholder="Название цвета"
+            placeholder="Название цвета"  
             className="rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+            required
           />
-          {/* Палитра */}
           <HexColorPicker
             color={color.code}
             onChange={code => setColor({ ...color, code })}

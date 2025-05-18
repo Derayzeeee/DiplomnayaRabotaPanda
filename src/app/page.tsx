@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion, MotionProps } from 'framer-motion';
 import Footer from '@/components/layout/Footer';
+import PopularProducts from '@/components/product/PopularProducts';
 
 const MotionP = motion.p;
 const MotionDiv = motion.div;
@@ -24,7 +25,7 @@ export default function Home() {
               priority
             />
             {/* Затемнение */}
-           
+            <div className="absolute inset-0 bg-black bg-opacity-50" />
           </div>
 
           {/* Контент */}
@@ -36,6 +37,14 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
               >
+                <MotionP
+                  className="text-5xl font-bold text-white"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8 }}
+                >
+                  Добро пожаловать в PandaStore
+                </MotionP>
               </MotionDiv>
             </div>
           </div>
@@ -116,6 +125,18 @@ export default function Home() {
                   </div>
                 </Link>
               </MotionDiv>
+            </div>
+          </div>
+        </section>
+
+
+        {/* Popular Products Section */}
+        <PopularProducts />
+
+        {/* Benefits Section */}
+        <section className="py-16 px-4 bg-white">
+          <div className="container mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             </div>
           </div>
         </section>

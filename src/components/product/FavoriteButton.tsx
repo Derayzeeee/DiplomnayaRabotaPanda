@@ -35,10 +35,10 @@ export default function FavoriteButton({
         if (response.ok) {
           const data = await response.json();
           setIsFavorite(data.isFavorite);
+          setIsInitialized(true);
         }
       } catch (error) {
         console.error('Error checking favorite status:', error);
-      } finally {
         setIsInitialized(true);
       }
     };
@@ -69,8 +69,7 @@ export default function FavoriteButton({
       }
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to update favorite status');
+        throw new Error('Failed to update favorite status');
       }
 
       const newIsFavorite = !isFavorite;
@@ -85,7 +84,7 @@ export default function FavoriteButton({
   };
 
   if (!isInitialized) {
-    return null; // или можно показать скелетон
+    return null;
   }
 
   return (

@@ -1,25 +1,31 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import ProductCard from '@/components/product/ProductCard';
 import { useProductFilters } from '@/hooks/useProductFilters';
-import type { ProductWithId } from '@/types/product';
+import { Product, Color, ProductWithId } from '@/types/product';
+import ProductCard from '@/components/product/ProductCard';
 
 type SortOption = 'newest' | 'priceAsc' | 'priceDesc';
 
-interface ProductListProps {
-  initialFilters?: {
-    categories: string[];
-    sizes: string[];
-    colors: string[];
-    heights?: string[];
-  };
-  onFilteredCountChange?: (count: number) => void;
-  setColors?: (colors: Array<{ name: string; code: string }>) => void;
+interface FiltersState {
+  categories: string[];
+  sizes: string[];
+  colors: string[];
+  heights: string[];
 }
 
-export default function ProductList({ initialFilters, onFilteredCountChange, setColors }: ProductListProps) {
+interface ProductListProps {
+  initialFilters?: Partial<FiltersState>;
+  onFilteredCountChange?: (count: number) => void;
+  setColors?: (colors: Array<Color>) => void;
+}
+
+export default function ProductList({ 
+  initialFilters,
+  onFilteredCountChange,
+  setColors 
+}: ProductListProps) {
   const [products, setProducts] = useState<ProductWithId[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [loading, setLoading] = useState(true);
@@ -28,32 +34,41 @@ export default function ProductList({ initialFilters, onFilteredCountChange, set
 
   useEffect(() => {
     fetchProducts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (initialFilters) {
-      updateFilters(initialFilters);
+      const completeFilters: FiltersState = {
+        categories: initialFilters.categories || [],
+        sizes: initialFilters.sizes || [],
+        colors: initialFilters.colors || [],
+        heights: initialFilters.heights || []
+      };
+      updateFilters(completeFilters);
     }
   }, [initialFilters, updateFilters]);
 
   async function fetchProducts() {
     try {
       const response = await fetch('/api/products');
-      const data = await response.json();
-      const productsWithStringId: ProductWithId[] = data.map((product: any) => ({
-        ...product,
-        _id: product._id.toString()
+      const rawData = await response.json();
+      
+      // Преобразуем данные в ProductWithId[]
+      const productsWithStringId: ProductWithId[] = rawData.map((item: any) => ({
+        ...item,
+        id: item.id || item._id, // Убедимся, что у нас есть id
+        _id: item._id.toString(),
+        isFavorite: false
       }));
+      
       setProducts(productsWithStringId);
 
-      // Формируем уникальные цвета и передаём их в setColors
       if (setColors) {
-        const uniqueColors: { name: string; code: string }[] = Array.from(
+        const uniqueColors: Color[] = Array.from(
           new Map(
             productsWithStringId
-              .filter((product: ProductWithId) => product.color && product.color.code)
-              .map((product: ProductWithId) => [product.color.code, product.color])
+              .filter(product => product.color && product.color.code)
+              .map(product => [product.color.code, product.color])
           ).values()
         );
         setColors(uniqueColors);
@@ -73,7 +88,9 @@ export default function ProductList({ initialFilters, onFilteredCountChange, set
         return [...products].sort((a, b) => b.price - a.price);
       case 'newest':
       default:
-        return products;
+        return [...products].sort((a, b) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
     }
   };
 
@@ -110,9 +127,9 @@ export default function ProductList({ initialFilters, onFilteredCountChange, set
             onChange={(e) => setSortBy(e.target.value as SortOption)}
             className="appearance-none bg-white border border-gray-300 text-gray-900 text-sm rounded-lg px-4 py-2.5 pr-8 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer hover:border-gray-400 transition-colors"
           >
-            <option value="newest" className="py-2">Сначала новые</option>
-            <option value="priceAsc" className="py-2">Сначала дешевле</option>
-            <option value="priceDesc" className="py-2">Сначала дороже</option>
+            <option value="newest">Сначала новые</option>
+            <option value="priceAsc">Сначала дешевле</option>
+            <option value="priceDesc">Сначала дороже</option>
           </select>
           <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
             <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
@@ -126,39 +143,8 @@ export default function ProductList({ initialFilters, onFilteredCountChange, set
         </div>
       </div>
 
-      <motion.div 
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10"
-        initial="hidden"
-        animate="show"
-        variants={{
-          hidden: { opacity: 0 },
-          show: {
-            opacity: 1,
-            transition: {
-              staggerChildren: 0.1
-            }
-          }
-        }}
-      >
-        {sortedProducts.map((product: ProductWithId) => (
-          <motion.div
-            key={product._id}
-            variants={{
-              hidden: { opacity: 0, y: 20 },
-              show: { opacity: 1, y: 0 }
-            }}
-          >
-            <ProductCard product={product} />
-          </motion.div>
-        ))}
-      </motion.div>
-
-      {filteredProducts.length === 0 && !loading && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center py-12"
-        >
+      {sortedProducts.length === 0 ? (
+        <div className="text-center py-12">
           <div className="inline-block p-4 rounded-full bg-gray-100 mb-4">
             <svg
               className="w-8 h-8 text-gray-400"
@@ -180,6 +166,41 @@ export default function ProductList({ initialFilters, onFilteredCountChange, set
           <p className="text-gray-600">
             Попробуйте изменить параметры фильтрации
           </p>
+        </div>
+      ) : (
+        <motion.div 
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.1
+              }
+            }
+          }}
+        >
+          {sortedProducts.map((product) => (
+            <motion.div
+              key={product._id}
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 }
+              }}
+            >
+              <ProductCard 
+                product={product}
+                onFavoriteChange={(isFavorite: boolean) => { // Добавили типизацию
+                  const updatedProducts = products.map(p => 
+                    p._id === product._id ? { ...p, isFavorite } : p
+                  );
+                  setProducts(updatedProducts);
+                }}
+              />
+            </motion.div>
+          ))}
         </motion.div>
       )}
     </div>

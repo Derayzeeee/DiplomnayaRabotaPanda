@@ -5,8 +5,28 @@ export interface Color {
   code: string;
 }
 
+export interface BaseProduct {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  oldPrice?: number;
+  category: string;
+  sizes: string[];
+  heights: string[];
+  color: Color;
+  images: string[];
+  isNewProduct?: boolean;
+  isSale?: boolean;
+  inStock: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+
 export interface MongoProduct {
   _id: Types.ObjectId;
+  isFavorite?: boolean;
   name: string;
   description: string;
   price: number;
@@ -25,6 +45,7 @@ export interface MongoProduct {
 
 export interface Product {
   id: string;
+  isFavorite?: boolean;
   name: string;
   description: string;
   price: number;
@@ -41,7 +62,7 @@ export interface Product {
   updatedAt: string;
 }
 
-export interface ProductWithId {
+export interface ProductWithId extends Product {
   _id: string;
   isFavorite?: boolean;
   name: string;

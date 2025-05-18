@@ -2,16 +2,12 @@
 
 import { useState, useCallback } from 'react';
 import Filters from './Filters';
-import ProductList from '../../app/catalog/ProductList';
-
-interface Color {
-  name: string;
-  code: string;
-}
+import { Color } from '@/types/product';
 
 interface FilterWrapperProps {
   categories: string[];
   sizes: string[];
+  colors: Color[]; // Добавляем colors в пропсы
   onFiltersChange?: (filters: {
     categories: string[];
     sizes: string[];
@@ -23,9 +19,9 @@ interface FilterWrapperProps {
 export default function FilterWrapper({ 
   categories, 
   sizes,
+  colors, // Принимаем colors из пропсов
   onFiltersChange 
 }: FilterWrapperProps) {
-  const [colors, setColors] = useState<Color[]>([]);
   const [activeFilters, setActiveFilters] = useState({
     categories: [] as string[],
     sizes: [] as string[],
@@ -43,7 +39,7 @@ export default function FilterWrapper({
       <Filters
         categories={categories}
         sizes={sizes}
-        colors={colors}
+        colors={colors} // Передаем цвета дальше в компонент Filters
         onFilterChange={handleFilterChange}
         initialFilters={activeFilters}
       />

@@ -4,9 +4,14 @@ import dbConnect from '@/lib/db/mongoose';
 import Product from '@/models/Product';
 import type { MongoProduct } from '@/types/product';
 
+// Общий интерфейс для параметров маршрута
+interface RouteParams {
+  params: Promise<{ id: string }>;
+}
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: RouteParams
 ) {
   try {
     const resolvedParams = await params;
@@ -71,10 +76,12 @@ export async function GET(
 }
 
 export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  req: NextRequest,
+  { params }: RouteParams
 ) {
   try {
+    await dbConnect();
+
     const resolvedParams = await params;
     const id = resolvedParams.id;
 
@@ -85,55 +92,51 @@ export async function PUT(
       );
     }
 
-    await dbConnect();
-    const data = await request.json();
-
-    // Преобразование и валидация данных
-    const updateData = {
-      ...data,
-      price: Number(data.price),
-      oldPrice: data.oldPrice ? Number(data.oldPrice) : undefined
-    };
-
-    // Логика для обработки скидок
-    if (updateData.isSale && !updateData.oldPrice) {
-      updateData.oldPrice = updateData.price;
+    const data = await req.json();
+    
+    // Проверяем данные цвета
+    if (!data.color || !data.color.name || !data.color.code) {
+      return NextResponse.json(
+        { error: 'Invalid color data' },
+        { status: 400 }
+      );
     }
 
-    if (!updateData.isSale) {
-      updateData.oldPrice = undefined;
-    }
+    // Убираем _id из данных обновления, если он есть
+    const { _id, ...updateData } = data;
 
-    const rawProduct = await Product.findByIdAndUpdate(
+    // Обновляем продукт
+    const updatedProduct = await Product.findByIdAndUpdate(
       id,
-      updateData,
-      { new: true, runValidators: true }
-    ).lean();
+      {
+        ...updateData,
+        color: {
+          name: data.color.name,
+          code: data.color.code
+        },
+        updatedAt: new Date()
+      },
+      { 
+        new: true, 
+        runValidators: true 
+      }
+    );
 
-    if (!rawProduct) {
+    if (!updatedProduct) {
       return NextResponse.json(
         { error: 'Product not found' },
         { status: 404 }
       );
     }
 
-    const product = rawProduct as unknown as MongoProduct;
+    const productObject = updatedProduct.toObject();
+    productObject.id = productObject._id.toString();
 
-    // Форматируем обновленный продукт
-    const formattedProduct = {
-      ...product,
-      _id: product._id.toString(),
-      createdAt: product.createdAt.toISOString(),
-      updatedAt: product.updatedAt.toISOString()
-    };
-
-    return NextResponse.json(formattedProduct);
+    return NextResponse.json(productObject);
   } catch (error) {
-    console.error('Database Error:', error);
+    console.error('Error updating product:', error);
     return NextResponse.json(
-      { 
-        error: error instanceof Error ? error.message : 'Internal Server Error'
-      },
+      { error: 'Failed to update product' },
       { status: 500 }
     );
   }
@@ -141,7 +144,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: RouteParams
 ) {
   try {
     const resolvedParams = await params;

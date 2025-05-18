@@ -89,20 +89,6 @@ export default function ProfilePage() {
                   {user.email}
                 </dd>
               </div>
-
-              <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-sm font-medium text-gray-500">ID пользователя</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                  {user.userId}
-                </dd>
-              </div>
-
-              <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-sm font-medium text-gray-500">Роль</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                  {user.role === 'admin' ? 'Администратор' : 'Пользователь'}
-                </dd>
-              </div>
             </dl>
           </div>
 

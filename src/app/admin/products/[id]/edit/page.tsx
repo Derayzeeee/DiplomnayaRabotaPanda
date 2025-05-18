@@ -49,8 +49,16 @@ export default function EditProductPage({ params }: EditProductPageProps) {
           throw new Error('No product data received');
         }
 
-        // Устанавливаем только данные продукта
-        setProduct(data.product);
+        // Убедимся, что структура цвета корректна
+        const productWithFormattedColor = {
+          ...data.product,
+          color: {
+            name: data.product.color?.name || '',
+            code: data.product.color?.code || '#000000'
+          }
+        };
+
+        setProduct(productWithFormattedColor);
       } catch (error) {
         console.error('[Debug] Error in fetchProduct:', error);
         setError(error instanceof Error ? error.message : 'Failed to load product');
@@ -68,21 +76,33 @@ export default function EditProductPage({ params }: EditProductPageProps) {
       const resolvedParams = await params;
       const id = resolvedParams.id;
 
-      console.log('[Debug] Submitting product data:', productData);
+      // Подготавливаем данные для обновления
+      const updateData = {
+        ...productData,
+        // Убедимся, что цвет обновляется корректно
+        color: {
+          name: productData.color.name,
+          code: productData.color.code
+        }
+      };
+
+      console.log('[Debug] Submitting product data:', updateData);
 
       const response = await fetch(`/api/products/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(productData),
+        body: JSON.stringify(updateData),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update product');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update product');
       }
 
-      await response.json();
+      const updatedProduct = await response.json();
+      console.log('[Debug] Updated product:', updatedProduct);
       
       router.refresh();
       router.push('/catalog');
