@@ -19,6 +19,8 @@ export interface BaseProduct {
   isNewProduct?: boolean;
   isSale?: boolean;
   inStock: boolean;
+  stockQuantity: number;
+  lowStockThreshold: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -38,6 +40,8 @@ export interface MongoProduct {
   isNewProduct: boolean;
   isSale: boolean;
   inStock: boolean;
+  stockQuantity: number;
+  lowStockThreshold: number;
   createdAt: Date;
   updatedAt: Date;
   __v: number;
@@ -57,7 +61,8 @@ export interface Product {
   images: string[];
   isNewProduct?: boolean;
   isSale?: boolean;
-  inStock: boolean;
+  stockQuantity: number;
+  lowStockThreshold: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -77,7 +82,14 @@ export interface ProductWithId extends Product {
   isNewProduct: boolean;
   isSale: boolean;
   inStock: boolean;
+  stockQuantity: number;
+  lowStockThreshold: number;
+  isLowStock?: boolean;
   createdAt: string;
   updatedAt: string;
   salePrice: string;
+}
+
+export interface ProductWithStock extends Product {
+  inStock: boolean; // Будет true, если stockQuantity > 0
 }

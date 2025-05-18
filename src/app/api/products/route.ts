@@ -103,9 +103,19 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
+    console.log('Updating product with data:', body); // Добавим для отладки
+
+    // Убедимся, что stockQuantity и lowStockThreshold преобразованы в числа
+    const updateData = {
+      ...body,
+      stockQuantity: Number(body.stockQuantity),
+      lowStockThreshold: Number(body.lowStockThreshold),
+      updatedAt: new Date()
+    };
+
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
-      { $set: body },
+      { $set: updateData },
       { new: true, runValidators: true }
     );
 
@@ -116,11 +126,12 @@ export async function PUT(request: NextRequest) {
       );
     }
     
+    console.log('Updated product:', updatedProduct); // Добавим для отладки
     return NextResponse.json(updatedProduct);
   } catch (error) {
     console.error('Database Error:', error);
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: error instanceof Error ? error.message : 'Internal Server Error' },
       { status: 500 }
     );
   }

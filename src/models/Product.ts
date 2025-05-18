@@ -64,6 +64,18 @@ const productSchema = new mongoose.Schema({
       message: 'Должно быть загружено хотя бы одно изображение'
     }
   },
+  stockQuantity: {
+    type: Number,
+    required: [true, 'Количество товара на складе обязательно'],
+    min: [0, 'Количество не может быть отрицательным'],
+    default: 0
+  },
+  lowStockThreshold: {
+    type: Number,
+    required: [true, 'Пороговое значение для уведомления обязательно'],
+    min: [0, 'Пороговое значение не может быть отрицательным'],
+    default: 5
+  },
   isNewProduct: {
     type: Boolean,
     default: false
@@ -71,10 +83,6 @@ const productSchema = new mongoose.Schema({
   isSale: {
     type: Boolean,
     default: false
-  },
-  inStock: {
-    type: Boolean,
-    default: true
   },
   createdAt: {
     type: Date,
@@ -103,12 +111,17 @@ productSchema.virtual('id').get(function() {
   return this._id.toHexString();
 });
 
+productSchema.virtual('isLowStock').get(function() {
+  return this.stockQuantity <= this.lowStockThreshold;
+});
+
 // Индексы для оптимизации запросов
 productSchema.index({ category: 1 });
 productSchema.index({ isNewProduct: 1 });
 productSchema.index({ isSale: 1 });
 productSchema.index({ price: 1 });
 productSchema.index({ createdAt: -1 });
+productSchema.index({ stockQuantity: 1 });
 
 // Метод для проверки, является ли товар новинкой
 productSchema.methods.isNew = function() {
@@ -127,6 +140,10 @@ productSchema.methods.getDiscountPercentage = function() {
   if (!this.isSale || !this.oldPrice) return 0;
   return Math.round(((this.oldPrice - this.price) / this.oldPrice) * 100);
 };
+
+productSchema.virtual('inStock').get(function() {
+  return this.stockQuantity > 0;
+});
 
 // Проверяем существование модели перед созданием новой
 const Product = mongoose.models.Product || mongoose.model('Product', productSchema);

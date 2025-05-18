@@ -83,12 +83,14 @@ export default function EditProductPage({ params }: EditProductPageProps) {
         color: {
           name: productData.color.name,
           code: productData.color.code
-        }
+        },
+        stockQuantity: Number(productData.stockQuantity),
+        lowStockThreshold: Number(productData.lowStockThreshold)
       };
 
       console.log('[Debug] Submitting product data:', updateData);
 
-      const response = await fetch(`/api/products/${id}`, {
+      const response = await fetch(`/api/products?id=${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -105,7 +107,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
       console.log('[Debug] Updated product:', updatedProduct);
       
       router.refresh();
-      router.push('/catalog');
+      router.push('/admin');
     } catch (error) {
       console.error('Error updating product:', error);
       setError(error instanceof Error ? error.message : 'Failed to update product');

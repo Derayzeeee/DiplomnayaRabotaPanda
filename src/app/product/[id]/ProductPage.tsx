@@ -5,7 +5,6 @@ import { notFound, useRouter } from 'next/navigation';
 import type { ProductWithId } from '@/types/product';
 import ProductGallery from '@/components/product/ProductGallery';
 import SizeSelector from '@/components/product/SizeSelector';
-import AddToCartButton from '@/components/product/AddToCartButton';
 import FavoriteButton from '@/components/product/FavoriteButton';
 import SizeChart from '@/components/common/SizeChart';
 import Loading from './loading';
@@ -50,15 +49,44 @@ export default function ProductPage({ id }: ProductPageProps) {
     fetchProduct();
   }, [id]);
 
+  const getStockStatus = () => {
+    if (!product) return { text: 'Нет в наличии', type: 'error' };
+
+    if (product.stockQuantity === 0) {
+      return { text: 'Нет в наличии', type: 'error' };
+    }
+
+    if (product.stockQuantity <= product.lowStockThreshold) {
+      return { text: 'Заканчивается', type: 'warning' };
+    }
+
+    return { text: 'В наличии', type: 'success' };
+  };
+
   const handleAddToCart = async () => {
     if (!isAuthenticated) {
       router.push('/login');
       return;
     }
+    
     if (!product || !selectedSize) {
       alert('Пожалуйста, выберите размер');
       return;
     }
+
+    // Проверка наличия товара
+    if (product.stockQuantity === 0) {
+      alert('К сожалению, товар закончился');
+      return;
+    }
+
+    // Проверка достаточного количества
+    if (product.stockQuantity < quantity) {
+      alert(`К сожалению, доступно только ${product.stockQuantity} шт.`);
+      setQuantity(product.stockQuantity);
+      return;
+    }
+
     try {
       setIsAddingToCart(true);
       await addItem({
@@ -68,7 +96,7 @@ export default function ProductPage({ id }: ProductPageProps) {
         oldPrice: product.oldPrice,
         image: product.images[0],
         size: selectedSize,
-        color: product.color, // теперь только один цвет!
+        color: product.color,
         quantity,
       });
       alert('Товар добавлен в корзину');
@@ -84,6 +112,7 @@ export default function ProductPage({ id }: ProductPageProps) {
   if (!product) return notFound();
 
   const showHeightInfo = CATEGORIES_WITH_HEIGHT.includes(product.category);
+  const canAddToCart = product.stockQuantity > 0 && isAuthenticated && selectedSize && !isAddingToCart;
 
   return (
     <div className="bg-white min-h-screen flex flex-col">
@@ -184,36 +213,33 @@ export default function ProductPage({ id }: ProductPageProps) {
                   </button>
                   <span className="px-3 py-1">{quantity}</span>
                   <button
-                    onClick={() => setQuantity(Math.min(10, quantity + 1))}
+                    onClick={() => setQuantity(Math.min(product.stockQuantity, quantity + 1))}
                     className="px-3 py-1 hover:bg-gray-100"
-                    disabled={quantity >= 10}
+                    disabled={quantity >= product.stockQuantity}
                   >
                     +
                   </button>
                 </div>
                 <button
                   onClick={handleAddToCart}
-                  disabled={
-                    !product.inStock ||
-                    !isAuthenticated ||
-                    !selectedSize ||
-                    isAddingToCart
-                  }
+                  disabled={!canAddToCart}
                   className={`flex-1 px-6 py-3 rounded-md text-white transition-colors ${
                     !isAuthenticated
                       ? 'bg-gray-500 hover:bg-gray-600'
-                      : product.inStock && selectedSize
+                      : canAddToCart
                         ? 'bg-black hover:bg-gray-800'
                         : 'bg-gray-400 cursor-not-allowed'
                   }`}
                 >
                   {!isAuthenticated
                     ? 'Войдите в аккаунт чтобы добавить товар в корзину'
-                    : !product.inStock
+                    : product.stockQuantity === 0
                       ? 'Нет в наличии'
-                      : isAddingToCart
-                        ? 'Добавление...'
-                        : 'Добавить в корзину'}
+                      : !selectedSize
+                        ? 'Выберите размер'
+                        : isAddingToCart
+                          ? 'Добавление...'
+                          : 'Добавить в корзину'}
                 </button>
               </div>
             </div>
@@ -231,9 +257,20 @@ export default function ProductPage({ id }: ProductPageProps) {
               {/* Статус наличия */}
               <div>
                 <h3 className="text-sm font-medium text-gray-900">Статус</h3>
-                <p className="mt-2 text-sm text-gray-600">
-                  {product.inStock ? 'В наличии' : 'Нет в наличии'}
-                </p>
+                <div className="mt-2">
+                  {(() => {
+                    const status = getStockStatus();
+                    return (
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        status.type === 'success' ? 'bg-green-100 text-green-800' :
+                        status.type === 'warning' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {status.text}
+                      </span>
+                    );
+                  })()}
+                </div>
               </div>
 
               {/* Информация о росте */}

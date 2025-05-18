@@ -80,23 +80,16 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         </div>
 
         <div>
-          <h3 className="text-sm font-medium text-gray-900">Цвет</h3>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {product.colors.map((color) => (
-              <button
-                key={color.code}
-                onClick={() => setSelectedColor(color.code)}
-                className={`w-8 h-8 rounded-full border-2 ${
-                  selectedColor === color.code
-                    ? 'border-gray-900'
-                    : 'border-transparent'
-                } ring-1 ring-gray-200`}
-                style={{ backgroundColor: color.code }}
-                title={color.name}
+            <h3 className="text-sm font-medium text-gray-900">Цвет</h3>
+            <div className="flex items-center gap-2 mt-2">
+              <span
+                className="w-8 h-8 rounded-full border"
+                style={{ backgroundColor: product.color.code }}
+                title={product.color.name}
               />
-            ))}
+              <span className="text-sm">{product.color.name}</span>
+            </div>
           </div>
-        </div>
 
         <button
           className="w-full bg-gray-900 text-white py-3 px-4 rounded-md font-medium hover:bg-gray-800 transition-colors"

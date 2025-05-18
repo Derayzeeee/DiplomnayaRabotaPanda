@@ -14,6 +14,7 @@ interface AddToCartButtonProps {
   image: string;
   selectedSize: string;
   selectedColor: Color;
+  stockQuantity: number; // Добавляем проверку количества
 }
 
 export default function AddToCartButton({
@@ -24,13 +25,29 @@ export default function AddToCartButton({
   image,
   selectedSize,
   selectedColor,
+  stockQuantity, // Добавляем параметр
 }: AddToCartButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const { addItem } = useCart();
 
-  // Если пользователь не авторизован, показываем кнопку для входа
+  // Проверяем наличие товара
+  const isAvailable = stockQuantity > 0;
+
+  // Если товара нет в наличии
+  if (!isAvailable) {
+    return (
+      <button
+        disabled
+        className="w-full py-3 rounded-lg bg-gray-200 text-gray-500 cursor-not-allowed"
+      >
+        Нет в наличии
+      </button>
+    );
+  }
+
+  // Если пользователь не авторизован
   if (!isAuthenticated) {
     return (
       <button
@@ -46,6 +63,12 @@ export default function AddToCartButton({
   const handleAddToCart = async () => {
     if (!selectedSize || !selectedColor) {
       alert('Пожалуйста, выберите размер и цвет');
+      return;
+    }
+
+    // Дополнительная проверка наличия перед добавлением
+    if (!isAvailable) {
+      alert('К сожалению, товар закончился');
       return;
     }
 

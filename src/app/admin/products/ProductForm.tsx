@@ -55,6 +55,8 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
       isNewProduct: false,
       isSale: false,
       inStock: true,
+      stockQuantity: 0,
+      lowStockThreshold: 5,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }
@@ -169,9 +171,13 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
         .map(([size]) => size),
       heights: Object.entries(selectedHeights)
         .filter(([_, isSelected]) => isSelected)
-        .map(([height]) => height)
-    };
+        .map(([height]) => height),
+      stockQuantity: Number(data.stockQuantity) || 0,
+      lowStockThreshold: Number(data.lowStockThreshold) || 5
 
+    };
+    console.log('Submitting data:', finalData); // Добавим для отладки
+  onSubmit(finalData);
     // Удаляем _id при создании нового товара
     if (!initialData) {
       const { _id, id, ...submitData } = finalData;
@@ -372,6 +378,37 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
             </div>
           ))}
         </div>
+        <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Количество на складе
+          </label>
+          <input
+            type="number"
+            {...register('stockQuantity', { 
+              required: true,
+              min: 0,
+              valueAsNumber: true
+            })}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Пороговое значение
+          </label>
+          <input
+            type="number"
+            {...register('lowStockThreshold', { 
+              required: true,
+              min: 0,
+              valueAsNumber: true
+            })}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+          />
+        </div>
+      </div>
       </div>
 
       {/* Флажки */}
@@ -393,15 +430,6 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
               className="rounded border-gray-300 text-black focus:ring-black"
             />
             <span>Скидка</span>
-          </label>
-
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              {...register('inStock')}
-              className="rounded border-gray-300 text-black focus:ring-black"
-            />
-            <span>В наличии</span>
           </label>
         </div>
       </div>
