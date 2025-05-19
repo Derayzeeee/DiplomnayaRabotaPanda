@@ -1,51 +1,194 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { debounce } from 'lodash';
 
-export default function RegisterPage() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+interface ValidationErrors {
+  name?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+  submit?: string;
+}
+
+interface FieldAvailability {
+  name: boolean;
+  email: boolean;
+}
+
+export default function Register() {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  
+  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [loading, setLoading] = useState(false);
+  const [availability, setAvailability] = useState<FieldAvailability>({
+    name: true,
+    email: true
+  });
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsLoading(true);
-
-    if (password !== confirmPassword) {
-      setError('Пароли не совпадают');
-      setIsLoading(false);
-      return;
+  // Функция для проверки сложности пароля
+  const validatePassword = (password: string): string[] => {
+    const errors: string[] = [];
+    
+    if (password.length < 8) {
+      errors.push('Минимум 8 символов');
+    }
+    if (!/[A-Z]/.test(password)) {
+      errors.push('Минимум 1 заглавная буква');
+    }
+    if (!/[a-z]/.test(password)) {
+      errors.push('Минимум 1 строчная буква');
+    }
+    if (!/[0-9]/.test(password)) {
+      errors.push('Минимум 1 цифра');
+    }
+    if (!/[!@#$%^&*]/.test(password)) {
+      errors.push('Минимум 1 специальный символ (!@#$%^&*)');
     }
 
+    return errors;
+  };
+
+  // Функция для проверки доступности name и email
+  const checkAvailability = debounce(async (field: 'name' | 'email', value: string) => {
+    if (!value) return;
+
     try {
-      const response = await fetch('/api/auth/register', {
+      const res = await fetch('/api/auth/check-availability', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ field, value }),
       });
 
-      const data = await response.json();
+      const data = await res.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Ошибка при регистрации');
+      setAvailability(prev => ({
+        ...prev,
+        [field]: !data.exists
+      }));
+
+      if (data.exists) {
+        setErrors(prev => ({
+          ...prev,
+          [field]: `Этот ${field === 'email' ? 'email' : 'логин'} уже занят`
+        }));
+      } else {
+        setErrors(prev => ({
+          ...prev,
+          [field]: undefined
+        }));
+      }
+    } catch (error) {
+      console.error(`Error checking ${field} availability:`, error);
+    }
+  }, 500);
+
+  // Эффект для валидации пароля
+  useEffect(() => {
+    if (formData.password) {
+      const passwordErrors = validatePassword(formData.password);
+      if (passwordErrors.length > 0) {
+        setErrors(prev => ({
+          ...prev,
+          password: passwordErrors.join(', ')
+        }));
+      } else {
+        setErrors(prev => ({
+          ...prev,
+          password: undefined
+        }));
+      }
+    }
+
+    if (formData.confirmPassword && formData.password !== formData.confirmPassword) {
+      setErrors(prev => ({
+        ...prev,
+        confirmPassword: 'Пароли не совпадают'
+      }));
+    } else {
+      setErrors(prev => ({
+        ...prev,
+        confirmPassword: undefined
+      }));
+    }
+  }, [formData.password, formData.confirmPassword]);
+
+  // Обработчик изменения полей формы
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+    if (name === 'name' || name === 'email') {
+      checkAvailability(name, value);
+    }
+  };
+
+  // Обработчик отправки формы
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    // Проверяем наличие ошибок
+    if (Object.values(errors).some(error => error) || !availability.name || !availability.email) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Что-то пошло не так');
       }
 
-      // Успешная регистрация
-      router.push('/login?registered=true'); // Добавляем параметр для показа сообщения об успешной регистрации
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Произошла ошибка');
+      router.push('/login');
+    } catch (error) {
+      setErrors(prev => ({
+        ...prev,
+        submit: error instanceof Error ? error.message : 'Произошла ошибка'
+      }));
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
+  };
+
+  // Проверка возможности отправки формы
+  const isSubmitDisabled = () => {
+    return (
+      loading ||
+      Object.values(errors).some(error => error) ||
+      !availability.name ||
+      !availability.email ||
+      !formData.name ||
+      !formData.email ||
+      !formData.password ||
+      !formData.confirmPassword
+    );
   };
 
   return (
@@ -57,33 +200,38 @@ export default function RegisterPage() {
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Уже есть аккаунт?{' '}
-            <Link
-              href="/login"
-              className="font-medium text-black hover:text-gray-800"
-            >
-              Войдите
+            <Link href="/login" className="font-medium text-black hover:text-gray-800">
+              Войти
             </Link>
           </p>
         </div>
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
+          <div className="space-y-4">
             <div>
-              <label htmlFor="name" className="sr-only">
-                Имя
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                Имя пользователя
               </label>
               <input
                 id="name"
                 name="name"
                 type="text"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-black focus:border-black focus:z-10 sm:text-sm"
-                placeholder="Имя"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
+                  errors.name ? 'border-red-500' : 'border-gray-300'
+                } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-black focus:border-black sm:text-sm`}
+                placeholder="Имя пользователя"
+                value={formData.name}
+                onChange={handleChange}
+                disabled={loading}
               />
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+              )}
             </div>
+
             <div>
-              <label htmlFor="email" className="sr-only">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email
               </label>
               <input
@@ -91,14 +239,21 @@ export default function RegisterPage() {
                 name="email"
                 type="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-black focus:border-black focus:z-10 sm:text-sm"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
+                  errors.email ? 'border-red-500' : 'border-gray-300'
+                } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-black focus:border-black sm:text-sm`}
+                placeholder="Email адрес"
+                value={formData.email}
+                onChange={handleChange}
+                disabled={loading}
               />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+              )}
             </div>
+
             <div>
-              <label htmlFor="password" className="sr-only">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Пароль
               </label>
               <input
@@ -106,62 +261,56 @@ export default function RegisterPage() {
                 name="password"
                 type="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-black focus:border-black focus:z-10 sm:text-sm"
+                className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
+                  errors.password ? 'border-red-500' : 'border-gray-300'
+                } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-black focus:border-black sm:text-sm`}
                 placeholder="Пароль"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formData.password}
+                onChange={handleChange}
+                disabled={loading}
               />
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+              )}
             </div>
+
             <div>
-              <label htmlFor="confirmPassword" className="sr-only">
+              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">
                 Подтвердите пароль
               </label>
               <input
-                id="confirmPassword"
+                id="confirm-password"
                 name="confirmPassword"
                 type="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-black focus:border-black focus:z-10 sm:text-sm"
+                className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
+                  errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-black focus:border-black sm:text-sm`}
                 placeholder="Подтвердите пароль"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                disabled={loading}
               />
+              {errors.confirmPassword && (
+                <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+              )}
             </div>
           </div>
 
-          {error && (
-            <div className="text-red-500 text-sm text-center">{error}</div>
+          {errors.submit && (
+            <div className="text-red-600 text-sm text-center">{errors.submit}</div>
           )}
 
           <div>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isSubmitDisabled()}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:bg-gray-400"
             >
-              {isLoading ? 'Загрузка...' : 'Зарегистрироваться'}
+              {loading ? 'Регистрация...' : 'Зарегистрироваться'}
             </button>
           </div>
         </form>
-
-        <div className="text-center text-sm">
-          <p className="text-gray-600">
-            Регистрируясь, вы соглашаетесь с нашими{' '}
-            <Link
-              href="/terms"
-              className="text-black hover:text-gray-800"
-            >
-              условиями использования
-            </Link>
-            {' '}и{' '}
-            <Link
-              href="/privacy"
-              className="text-black hover:text-gray-800"
-            >
-              политикой конфиденциальности
-            </Link>
-          </p>
-        </div>
       </div>
     </div>
   );

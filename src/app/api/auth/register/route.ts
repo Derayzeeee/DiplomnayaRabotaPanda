@@ -11,10 +11,20 @@ export async function POST(request: Request) {
     
     const { email, password, name } = await request.json();
 
-    const existingUser = await User.findOne({ email });
+    if (!name || !email || !password) {
+      return NextResponse.json(
+        { error: 'Все поля должны быть заполнены' },
+        { status: 400 }
+      );
+    }
+
+    const existingUser = await User.findOne({
+      $or: [{ email }, { name }] // Изменили username на name
+    });
+
     if (existingUser) {
       return NextResponse.json(
-        { message: 'Пользователь с таким email уже существует' },
+        { error: 'Пользователь с таким email или именем уже существует' },
         { status: 400 }
       );
     }
