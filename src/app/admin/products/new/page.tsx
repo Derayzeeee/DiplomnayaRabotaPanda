@@ -10,6 +10,9 @@ export default function NewProductPage() {
   const router = useRouter();
 
   const handleSubmit = async (productData: Product) => {
+
+    if (loading) return;
+
     try {
       setLoading(true);
       
@@ -32,6 +35,7 @@ export default function NewProductPage() {
       router.refresh();
       // Используем абсолютный путь и await для навигации
       await router.push('/catalog');
+      router.refresh();
       
     } catch (error) {
       console.error('Error creating product:', error);
