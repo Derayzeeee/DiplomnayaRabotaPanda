@@ -245,14 +245,14 @@ export default function CheckoutPage() {
                       </p>
                     </div>
                     <p className="font-medium">
-                      {(item.price * item.quantity).toLocaleString('ru-RU')} ₽
+                      {(item.price * item.quantity).toLocaleString('ru-RU')} BYN
                     </p>
                   </div>
                 ))}
                 <div className="border-t pt-4 mt-4">
                   <div className="flex justify-between text-lg font-medium">
                     <span>Итого</span>
-                    <span>{cart.totalAmount.toLocaleString('ru-RU')} ₽</span>
+                    <span>{cart.totalAmount.toLocaleString('ru-RU')} BYN</span>
                   </div>
                 </div>
               </div>

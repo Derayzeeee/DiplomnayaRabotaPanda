@@ -107,7 +107,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
       console.log('[Debug] Updated product:', updatedProduct);
       
       router.refresh();
-      router.push('/admin');
+      router.push('/catalog');
     } catch (error) {
       console.error('Error updating product:', error);
       setError(error instanceof Error ? error.message : 'Failed to update product');

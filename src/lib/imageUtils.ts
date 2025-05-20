@@ -1,17 +1,17 @@
-export const getOptimizedImageUrl = (url: string, width: number = 500) => {
-    if (!url) return '';
-    
-    // Проверяем, является ли URL cloudinary
-    if (url.includes('res.cloudinary.com')) {
-        // Добавляем параметры трансформации
-        return url.replace('/upload/', `/upload/w_${width},c_scale,q_auto,f_auto/`);
+export const getOptimizedImageUrl = (url: string, width: number): string => {
+    // Если URL уже содержит параметры оптимизации, возвращаем его как есть
+    if (url.includes('?w=')) {
+        return url;
     }
-    
-    return url;
+
+    // Добавляем параметры оптимизации к URL
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}w=${width}&q=85`;
 };
 
 export const getProductImageSizes = {
     thumbnail: (url: string) => getOptimizedImageUrl(url, 200),
-    medium: (url: string) => getOptimizedImageUrl(url, 500),
-    large: (url: string) => getOptimizedImageUrl(url, 1000)
+    small: (url: string) => getOptimizedImageUrl(url, 400),
+    medium: (url: string) => getOptimizedImageUrl(url, 800),
+    large: (url: string) => getOptimizedImageUrl(url, 1200)
 };

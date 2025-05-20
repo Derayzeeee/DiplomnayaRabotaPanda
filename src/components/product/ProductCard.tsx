@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ProductWithId } from '@/types/product';
 import FavoriteButton from './FavoriteButton';
+import { getProductImageSizes } from '@/lib/imageUtils';
 
 interface ProductCardProps {
   product: ProductWithId;
@@ -22,20 +23,27 @@ function isValidUrl(url: string): boolean {
 
 export default function ProductCard({ product, onFavoriteChange }: ProductCardProps) {
   const imageUrl = product.images?.[0] && isValidUrl(product.images[0])
-    ? product.images[0]
+    ? getProductImageSizes.medium(product.images[0])
     : '/fallback-image.jpg';
 
   return (
     <motion.div className="group relative">
       <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-gray-100">
-        {imageUrl && (
-          <Image
-            src={imageUrl}
-            alt={product.name || 'Product Image'}
-            fill
-            className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
-          />
-        )}
+        <div 
+            className="relative w-full" 
+            style={{ paddingBottom: '150%' }} // Соотношение 10:15
+        >
+            {imageUrl && (
+                <Image
+                    src={imageUrl}
+                    alt={product.name || 'Product Image'}
+                    fill
+                    className="object-contain group-hover:scale-105 transition-transform duration-300"
+                    sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                    quality={75}
+                />
+            )}
+        </div>
         <div className="absolute top-2 right-2 flex flex-col gap-2">
           {product.isSale && (
             <div className="bg-red-600 text-white px-2 py-1 rounded-md text-sm font-medium">

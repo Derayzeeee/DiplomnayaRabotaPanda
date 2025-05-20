@@ -33,9 +33,7 @@ export default function NewProductPage() {
 
       // Изменяем порядок: сначала обновляем данные, потом делаем навигацию
       router.refresh();
-      // Используем абсолютный путь и await для навигации
-      await router.push('/catalog');
-      router.refresh();
+      router.push('/catalog');
       
     } catch (error) {
       console.error('Error creating product:', error);

@@ -311,7 +311,6 @@ export default function ProductPage({ id }: ProductPageProps) {
           </div>
         )}
       </main>
-      <Footer />
     </div>
   );
 }
