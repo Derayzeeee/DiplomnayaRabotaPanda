@@ -68,36 +68,36 @@ export default function PopularProducts() {
             <MotionDiv
               key={product.id}
               whileHover={{ scale: 1.02 }}
-              className="bg-white rounded-lg shadow-sm overflow-hidden"
+              className="bg-white rounded-lg shadow hover:shadow-lg transition-all duration-300 overflow-hidden"
             >
               <Link href={`/product/${product.id}`}>
-                <div className="aspect-square relative">
+                <div className="aspect-[4/5] relative">
                   <Image
                     src={product.images[0]}
                     alt={product.name}
                     fill
-                    className="object-cover"
+                    className="object-cover hover:scale-105 transition-transform duration-500"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
                   {/* Badges */}
                   <div className="absolute top-2 left-2 flex flex-col gap-2">
                     {product.status === 'NEW' && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      <span className="bg-black text-white px-3 py-1 text-sm font-medium">
                         Новинка
                       </span>
                     )}
                     {product.status === 'SALE' && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                      <span className="bg-red-500 text-white px-3 py-1 text-sm font-medium">
                         Скидка
                       </span>
                     )}
                   </div>
                 </div>
                 <div className="p-4">
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  <h3 className="text-lg font-medium text-gray-900 hover:text-gray-700 transition-colors duration-300">
                     {product.name}
                   </h3>
-                  <div className="flex items-center gap-2">
+                  <div className="mt-2 flex items-center gap-2">
                     <span className="text-lg font-bold text-gray-900">
                       {product.price.toLocaleString('ru-RU')} BYN
                     </span>

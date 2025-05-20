@@ -125,18 +125,27 @@ export default function ProductList({
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as SortOption)}
-            className="appearance-none bg-white border border-gray-300 text-gray-900 text-sm rounded-lg px-4 py-2.5 pr-8 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer hover:border-gray-400 transition-colors"
+            className="appearance-none w-full min-w-[200px] py-2 pl-4 pr-10 text-sm
+                    bg-white border border-panda-gray-medium text-panda-black
+                    hover:border-panda-black focus:border-panda-black focus:outline-none
+                    transition-colors duration-200 cursor-pointer"
           >
             <option value="newest">Сначала новые</option>
             <option value="priceAsc">Сначала дешевле</option>
             <option value="priceDesc">Сначала дороже</option>
           </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-            <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                clipRule="evenodd"
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+            <svg 
+              className="w-4 h-4 text-panda-gray-dark" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                d="M19 9l-7 7-7-7"
               />
             </svg>
           </div>

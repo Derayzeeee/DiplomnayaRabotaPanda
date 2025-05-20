@@ -5,6 +5,7 @@ import Category from '@/models/Category';
 import Loading from './loading';
 import Footer from '@/components/layout/Footer';
 import FilterWrapper from './FilterWrapper';
+import CatalogContent from '../catalog/CatalogContent';
 
 export default async function SalePage() {
   await dbConnect();
@@ -26,7 +27,7 @@ export default async function SalePage() {
       <div className="flex-grow">
         <div className="container mx-auto px-4 pt-24">
           <div className="flex flex-col space-y-6">
-            <div className="text-center max-w-2xl mx-auto mb-8">
+            <div className="text-left max-w-2xl mx-left mb-8">
               <h1 className="text-4xl font-bold text-gray-900">Распродажа</h1>
               <p className="mt-4 text-lg text-gray-600">
                 Специальные предложения и выгодные цены
@@ -34,10 +35,7 @@ export default async function SalePage() {
             </div>
 
             <Suspense fallback={<Loading />}>
-              <FilterWrapper
-                categories={categories.map(cat => cat.name)}
-                sizes={uniqueSizes}
-                colors={uniqueColors}
+              <CatalogContent
               />
             </Suspense>
           </div>

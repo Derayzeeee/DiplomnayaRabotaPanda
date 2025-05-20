@@ -10,6 +10,7 @@ export default function CatalogContent() {
   const [categories, setCategories] = useState<string[]>([]);
   const [sizes, setSizes] = useState<string[]>([]);
   const [colors, setColors] = useState<Color[]>([]);
+  const [filteredCount, setFilteredCount] = useState<number>(0);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -17,22 +18,18 @@ export default function CatalogContent() {
         const response = await fetch('/api/products');
         const data = await response.json() as Product[];
         
-        // Получаем все продукты
         setProducts(data);
 
-        // Получаем уникальные категории
         const uniqueCategories = Array.from(
           new Set(data.map((product: Product) => product.category))
         ) as string[];
         setCategories(uniqueCategories);
 
-        // Получаем уникальные размеры
         const uniqueSizes = Array.from(
           new Set(data.flatMap((product: Product) => product.sizes))
         ) as string[];
         setSizes(uniqueSizes);
 
-        // Получаем уникальные цвета
         const uniqueColors = Array.from(
           new Map(
             data
@@ -61,20 +58,35 @@ export default function CatalogContent() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8">
-      <aside className="lg:w-64 flex-shrink-0 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-        <FilterWrapper
-          categories={categories}
-          sizes={sizes}
-          colors={colors}
-          onFiltersChange={handleFiltersChange}
-        />
-      </aside>
-      <div className="flex-1">
-        <ProductList 
-          initialFilters={filters}
-          onFilteredCountChange={(count) => console.log('Filtered count:', count)}
-        />
+    <div className="min-h-screen bg-panda-white">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Боковая панель с фильтрами */}
+          <aside className="lg:w-64 flex-shrink-0">
+            <div className="border-0 border-panda-black p-6 sticky top-24">
+              <FilterWrapper
+                categories={categories}
+                sizes={sizes}
+                colors={colors}
+                onFiltersChange={handleFiltersChange}
+              />
+            </div>
+          </aside>
+
+          {/* Основной контент */}
+          <div className="flex-1">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-panda-black">
+
+              </h2>
+            </div>
+
+            <ProductList 
+              initialFilters={filters}
+              onFilteredCountChange={setFilteredCount}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

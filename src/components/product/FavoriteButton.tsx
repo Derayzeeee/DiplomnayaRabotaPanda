@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { HeartIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 
@@ -88,20 +89,26 @@ export default function FavoriteButton({
   }
 
   return (
-    <button
-      type="button"
+     <motion.button
       onClick={toggleFavorite}
-      disabled={isLoading}
-      className={`relative z-10 p-2 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors ${
-        isLoading ? 'opacity-50 cursor-not-allowed' : ''
-      } ${className}`}
-      aria-label={isFavorite ? 'Удалить из избранного' : 'Добавить в избранное'}
+      className="w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-md
+                 hover:bg-panda-gray-light transition-colors duration-300"
+      whileHover={{ scale: 1.1 }}
+      whileTap={{ scale: 0.9 }}
     >
-      {isFavorite ? (
-        <HeartIconSolid className="w-6 h-6 text-red-500" />
-      ) : (
-        <HeartIcon className="w-6 h-6 text-gray-600" />
-      )}
-    </button>
+      <svg
+        className={`w-5 h-5 ${isFavorite ? 'text-red-500' : 'text-panda-gray-dark'}`}
+        fill={isFavorite ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={1.5}
+          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+        />
+      </svg>
+    </motion.button>
   );
 }

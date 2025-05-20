@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   CATEGORIES, 
   SIZES, 
@@ -55,6 +55,12 @@ export default function Filters({
     initialFilters?.heights || []
   );
 
+  const hasActiveFilters = 
+    selectedCategories.length > 0 || 
+    selectedSizes.length > 0 || 
+    selectedColors.length > 0 || 
+    selectedHeights.length > 0;
+
   const showHeightFilter = selectedCategories.some(category => 
     CATEGORIES_WITH_HEIGHT.includes(category)
   );
@@ -100,30 +106,144 @@ export default function Filters({
     });
   };
 
-  const isAnyFilterActive = selectedCategories.length > 0 || 
-                          selectedSizes.length > 0 || 
-                          selectedColors.length > 0 ||
-                          selectedHeights.length > 0;
+  const handleResetFilters = () => {
+    setSelectedCategories([]);
+    setSelectedSizes([]);
+    setSelectedColors([]);
+    setSelectedHeights([]);
+    
+    onFilterChange({
+      categories: [],
+      sizes: [],
+      colors: [],
+      heights: [],
+    });
+  };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      {/* Заголовок и кнопка сброса */}
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-base font-medium text-panda-black">Фильтры</h2>
+        <AnimatePresence>
+          {hasActiveFilters && (
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={handleResetFilters}
+              className="text-sm text-panda-gray-dark hover:text-panda-black 
+                       underline-offset-4 hover:underline transition-colors duration-200"
+            >
+              Сбросить все
+            </motion.button>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Активные фильтры */}
+      <AnimatePresence>
+        {hasActiveFilters && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="pb-4 border-b border-panda-gray-medium overflow-hidden"
+          >
+            <div className="flex flex-wrap gap-2">
+              {selectedCategories.map((category) => (
+                <motion.button
+                  key={`cat-${category}`}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  onClick={() => handleFilterChange('categories', category)}
+                  className="inline-flex items-center px-2 py-1 text-xs bg-panda-gray-light
+                           text-panda-black hover:bg-panda-gray-medium transition-colors duration-200"
+                >
+                  {category}
+                  <svg className="w-3 h-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </motion.button>
+              ))}
+              {selectedSizes.map((size) => (
+                <motion.button
+                  key={`size-${size}`}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  onClick={() => handleFilterChange('sizes', size)}
+                  className="inline-flex items-center px-2 py-1 text-xs bg-panda-gray-light
+                           text-panda-black hover:bg-panda-gray-medium transition-colors duration-200"
+                >
+                  Размер {size}
+                  <svg className="w-3 h-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </motion.button>
+              ))}
+              {selectedColors.map((colorCode) => {
+                const colorName = colors.find(c => c.code === colorCode)?.name;
+                return (
+                  <motion.button
+                    key={`color-${colorCode}`}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    onClick={() => handleFilterChange('colors', colorCode)}
+                    className="inline-flex items-center px-2 py-1 text-xs bg-panda-gray-light
+                             text-panda-black hover:bg-panda-gray-medium transition-colors duration-200"
+                  >
+                    {colorName}
+                    <svg className="w-3 h-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </motion.button>
+                );
+              })}
+              {selectedHeights.map((height) => (
+                <motion.button
+                  key={`height-${height}`}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  onClick={() => handleFilterChange('heights', height)}
+                  className="inline-flex items-center px-2 py-1 text-xs bg-panda-gray-light
+                           text-panda-black hover:bg-panda-gray-medium transition-colors duration-200"
+                >
+                  Рост {height}
+                  <svg className="w-3 h-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Категории */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Категории</h3>
+        <h3 className="text-sm font-medium text-panda-black mb-3 uppercase tracking-wider">
+          Категории
+        </h3>
         <div className="space-y-2">
           {CATEGORIES.map((category) => (
             <motion.label
               key={category}
-              className="flex items-center cursor-pointer group"
-              whileHover={{ scale: 1.02 }}
+              className="flex items-center cursor-pointer group text-sm"
+              whileHover={{ x: 2 }}
             >
               <input
                 type="checkbox"
                 checked={selectedCategories.includes(category)}
                 onChange={() => handleFilterChange('categories', category)}
-                className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                className="w-4 h-4 border-panda-gray-medium text-panda-black 
+                          focus:ring-panda-black focus:ring-offset-0"
               />
-              <span className="ml-3 text-sm text-gray-700 group-hover:text-gray-900 transition-colors">
+              <span className="ml-2 text-panda-gray-dark group-hover:text-panda-black 
+                             transition-colors duration-200">
                 {category}
               </span>
             </motion.label>
@@ -133,24 +253,49 @@ export default function Filters({
 
       {/* Размеры */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Размеры</h3>
-        <div className="grid grid-cols-4 gap-2">
+        <h3 className="text-sm font-medium text-panda-black mb-3 uppercase tracking-wider">
+          Размеры
+        </h3>
+        <div className="flex flex-wrap gap-2">
           {SIZES.map((size) => (
-            <motion.button
+            <button
               key={size}
               onClick={() => handleFilterChange('sizes', size)}
-              className={`
-                py-2 px-3 text-sm font-medium rounded-md transition-all duration-200
+              className={`px-3 py-1 text-sm border transition-all duration-200
                 ${selectedSizes.includes(size)
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-white text-gray-900 border border-gray-300 hover:border-indigo-500 hover:text-indigo-600'
-                }
-              `}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+                  ? 'border-panda-black bg-panda-black text-black'
+                  : 'border-panda-gray-medium text-panda-gray-dark hover:border-panda-black hover:text-panda-black'
+                }`}
             >
               {size}
-            </motion.button>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Цвета */}
+      <div>
+        <h3 className="text-sm font-medium text-panda-black mb-3 uppercase tracking-wider">
+          Цвета
+        </h3>
+        <div className="flex flex-wrap gap-2">
+          {colors.map((color) => (
+            <button
+              key={color.code}
+              onClick={() => handleFilterChange('colors', color.code)}
+              className="group relative"
+              title={color.name}
+            >
+              <div
+                className={`w-6 h-6 rounded-full transition-transform duration-200
+                  ${selectedColors.includes(color.code)
+                    ? 'ring-1 ring-panda-black ring-offset-1'
+                    : 'hover:scale-110'
+                  }`}
+                style={{ backgroundColor: color.code }}
+              />
+              <span className="sr-only">{color.name}</span>
+            </button>
           ))}
         </div>
       </div>
@@ -158,102 +303,25 @@ export default function Filters({
       {/* Рост */}
       {showHeightFilter && (
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Рост</h3>
-          <div className="grid grid-cols-3 gap-2">
+          <h3 className="text-sm font-medium text-panda-black mb-3 uppercase tracking-wider">
+            Рост
+          </h3>
+          <div className="flex gap-2">
             {HEIGHTS.map((height) => (
-              <motion.button
+              <button
                 key={height}
                 onClick={() => handleFilterChange('heights', height)}
-                className={`
-                  py-2 px-3 text-sm font-medium rounded-md transition-all duration-200
+                className={`px-3 py-1 text-sm border transition-all duration-200
                   ${selectedHeights.includes(height)
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-white text-gray-900 border border-gray-300 hover:border-indigo-500 hover:text-indigo-600'
-                  }
-                `}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                    ? 'border-panda-black bg-panda-black text-white'
+                    : 'border-panda-gray-medium text-panda-gray-dark hover:border-panda-black hover:text-panda-black'
+                  }`}
               >
                 {height}
-              </motion.button>
+              </button>
             ))}
           </div>
         </div>
-      )}
-
-      {/* Цвета */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Цвета</h3>
-        <div className="flex flex-wrap gap-3">
-          {colors.map((color) => (
-            <motion.button
-              key={color.code}
-              onClick={() => handleFilterChange('colors', color.code)}
-              className={`
-                w-8 h-8 rounded-full relative
-                border border-gray-200
-                ${selectedColors.includes(color.code)
-                  ? 'ring-2 ring-offset-2 ring-indigo-600'
-                  : 'hover:ring-2 hover:ring-offset-2 hover:ring-gray-300 transition-all duration-200'
-                }
-                ${color.code.toLowerCase() === '#ffffff' || color.code.toLowerCase() === 'white'
-                  ? 'ring-1 ring-gray-200'
-                  : ''
-                }
-              `}
-              style={{
-                backgroundColor: color.code,
-                boxShadow: color.code.toLowerCase() === '#ffffff' || color.code.toLowerCase() === 'white'
-                  ? 'inset 0 0 0 1px rgba(0, 0, 0, 0.1)'
-                  : 'none'
-              }}
-              title={color.name}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              {selectedColors.includes(color.code) && (
-                <span className={`
-                  absolute inset-0 flex items-center justify-center
-                  ${color.code.toLowerCase() === '#ffffff' || color.code.toLowerCase() === 'white'
-                    ? 'text-gray-800'
-                    : 'text-white'
-                  }
-                `}>
-                  <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </span>
-              )}
-            </motion.button>
-          ))}
-        </div>
-      </div>
-
-      {/* Кнопка сброса фильтров */}
-      {isAnyFilterActive && (
-        <motion.button
-          onClick={() => {
-            setSelectedCategories([]);
-            setSelectedSizes([]);
-            setSelectedColors([]);
-            setSelectedHeights([]);
-            onFilterChange({
-              categories: [],
-              sizes: [],
-              colors: [],
-              heights: []
-            });
-          }}
-          className="w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors duration-200"
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          Сбросить все фильтры
-        </motion.button>
       )}
     </div>
   );
