@@ -8,20 +8,19 @@ import PopularProducts from '@/components/product/PopularProducts';
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero секция */}
+      {/* Hero секция - убираем затемнение */}
       <section className="relative h-[80vh] overflow-hidden">
         <Image
-          src="/images/hero-bg.jpg" // Используем ваше существующее изображение
+          src="/images/hero-bg.jpg"
           alt="Hero banner"
           fill
           className="object-cover"
           priority
         />
-        <div className="absolute inset-0 bg-black/50" />
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center text-white space-y-6 px-4">
+          <div className="text-center text-white space-y-8 px-4 bg-black/80 py-10"> {/* Добавляем фон только для текста */}
             <motion.h1 
-              className="text-5xl md:text-6xl font-bold"
+              className="text-5xl md:text-6xl font-bold tracking-tight"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
@@ -36,7 +35,8 @@ export default function HomePage() {
               <Link 
                 href="/catalog"
                 className="inline-block bg-white text-black px-8 py-3 text-lg font-medium
-                         hover:bg-black hover:text-white transition-colors duration-300"
+                         border-2 border-white hover:bg-black hover:text-white 
+                         transition-all duration-300 transform hover:scale-105"
               >
                 Смотреть каталог
               </Link>
@@ -45,14 +45,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Акции и новинки */}
+      {/* Акции и новинки - убираем затемнение */}
       <section className="py-16 px-4">
         <div className="container mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Каталог */}
             <motion.div
               whileHover={{ scale: 1.02 }}
-              className="relative group overflow-hidden rounded-lg shadow-lg"
+              className="relative group overflow-hidden border-2 border-black"
             >
               <Link href="/catalog">
                 <div className="aspect-[4/5] relative">
@@ -60,13 +60,12 @@ export default function HomePage() {
                     src="/images/catalog.jpg"
                     alt="Каталог"
                     fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-opacity" />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <h3 className="text-2xl font-bold text-white mb-2">Каталог</h3>
-                      <p className="text-gray-200">Просмотрите нашу коллекцию одежды</p>
+                    <div className="text-center transform transition-transform group-hover:scale-105 bg-black/80 p-4">
+                      <h3 className="text-2xl font-bold text-white mb-3">Каталог</h3>
+                      <p className="text-white text-lg">Просмотрите нашу коллекцию одежды</p>
                     </div>
                   </div>
                 </div>
@@ -76,7 +75,7 @@ export default function HomePage() {
             {/* Новинки */}
             <motion.div
               whileHover={{ scale: 1.02 }}
-              className="relative group overflow-hidden rounded-lg shadow-lg"
+              className="relative group overflow-hidden border-2 border-black"
             >
               <Link href="/new">
                 <div className="aspect-[4/5] relative">
@@ -84,13 +83,12 @@ export default function HomePage() {
                     src="/images/new.jpg"
                     alt="Новинки"
                     fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-opacity" />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <h3 className="text-2xl font-bold text-white mb-2">Новинки</h3>
-                      <p className="text-gray-200">Ознакомьтесь с последними поступлениями</p>
+                    <div className="text-center transform transition-transform group-hover:scale-105 bg-black/80 p-4">
+                      <h3 className="text-2xl font-bold text-white mb-3">Новинки</h3>
+                      <p className="text-white text-lg">Ознакомьтесь с последними поступлениями</p>
                     </div>
                   </div>
                 </div>
@@ -100,7 +98,7 @@ export default function HomePage() {
             {/* Распродажа */}
             <motion.div
               whileHover={{ scale: 1.02 }}
-              className="relative group overflow-hidden rounded-lg shadow-lg"
+              className="relative group overflow-hidden border-2 border-black"
             >
               <Link href="/sale">
                 <div className="aspect-[4/5] relative">
@@ -108,13 +106,12 @@ export default function HomePage() {
                     src="/images/sale.jpg"
                     alt="Распродажа"
                     fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-opacity" />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <h3 className="text-2xl font-bold text-white mb-2">Распродажа</h3>
-                      <p className="text-gray-200">Специальные предложения и скидки</p>
+                    <div className="text-center transform transition-transform group-hover:scale-105 bg-black/80 p-4">
+                      <h3 className="text-2xl font-bold text-white mb-3">Распродажа</h3>
+                      <p className="text-white text-lg">Специальные предложения и скидки</p>
                     </div>
                   </div>
                 </div>
@@ -125,8 +122,10 @@ export default function HomePage() {
       </section>
 
       {/* Популярные товары */}
-      <section className="py-16 px-4 bg-gray-50">
-        <PopularProducts />
+      <section className="py-16 px-4 bg-white">
+        <div className="container mx-auto">
+          <PopularProducts />
+        </div>
       </section>
     </div>
   );

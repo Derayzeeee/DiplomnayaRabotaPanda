@@ -17,13 +17,15 @@ interface Filters {
   categories: string[];
   sizes: string[];
   colors: string[];
+  heights: string[]; // Добавляем обязательное поле heights
 }
 
 export default function FilterWrapper({ categories, sizes, colors }: FilterWrapperProps) {
   const [filters, setFilters] = useState<Filters>({
     categories: [],
     sizes: [],
-    colors: []
+    colors: [],
+    heights: [] // Инициализируем пустым массивом
   });
 
   const handleFilterChange = (newFilters: Filters) => {

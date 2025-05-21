@@ -18,32 +18,33 @@ export default function CartSummary() {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow">
-      <h2 className="text-lg font-medium text-gray-900 mb-4">
-        Сумма заказа
-      </h2>
-      <div className="space-y-2">
-        <div className="flex justify-between text-base">
-          <span>Товары ({cart.items.length})</span>
-          <span>{cart.totalAmount.toLocaleString('ru-RU')} ₽</span>
-        </div>
-        <div className="flex justify-between text-base">
-          <span>Доставка</span>
-          <span>Бесплатно</span>
-        </div>
-        <div className="border-t pt-2 mt-2">
-          <div className="flex justify-between text-lg font-medium">
-            <span>Итого</span>
-            <span>{cart.totalAmount.toLocaleString('ru-RU')} ₽</span>
-          </div>
+  <div className="border-0 border-black p-6"> {/* Заменили shadow на border, убрали rounded */}
+    <h2 className="text-xl font-bold text-black mb-6 pb-4 border-b-2 border-black">
+      Сумма заказа
+    </h2>
+    <div className="space-y-4"> {/* Увеличили отступы */}
+      <div className="flex justify-between text-base">
+        <span>Товары ({cart.items.length})</span>
+        <span>{cart.totalAmount.toLocaleString('ru-RU')} BYN</span>
+      </div>
+      <div className="flex justify-between text-base">
+        <span>Доставка</span>
+        <span>Бесплатно</span>
+      </div>
+      <div className="border-t-2 border-black pt-4 mt-4"> {/* Сделали разделитель жирнее */}
+        <div className="flex justify-between text-lg font-bold"> {/* Увеличили жирность */}
+          <span>Итого</span>
+          <span>{cart.totalAmount.toLocaleString('ru-RU')} BYN</span>
         </div>
       </div>
-      <button 
-        onClick={handleCheckout}
-        className="w-full mt-6 bg-black text-white py-3 px-4 rounded-md hover:bg-gray-800 transition-colors"
-      >
-        Оформить заказ
-      </button>
     </div>
-  );
+    <button 
+      onClick={handleCheckout}
+      className="w-full mt-8 bg-black text-white py-3 px-4 hover:bg-gray-900 
+                transition-colors border-2 border-black" // Убрали rounded, добавили border
+    >
+      Оформить заказ
+    </button>
+  </div>
+);
 }

@@ -3,24 +3,23 @@ import dbConnect from '@/lib/db/mongoose';
 import Product from '@/models/Product';
 import Category from '@/models/Category';
 import Loading from './loading';
-import Footer from '@/components/layout/Footer';
-import FilterWrapper from './FilterWrapper';
-import CatalogContent from '../catalog/CatalogContent';
+import ClientFilterWrapper from './ClientFilterWrapper';
 
 export default async function SalePage() {
   await dbConnect();
 
-  // Получаем все категории и уникальные размеры/цвета из товаров со скидкой
   const categories = await Category.find({}).lean();
   const uniqueSizes = await Product.distinct('sizes', { isSale: true });
-  const uniqueColorObjects = await Product.distinct('colors', { isSale: true });
-
-  // Убираем дубликаты цветов по коду цвета
-  const uniqueColors = Array.from(new Map(
-    uniqueColorObjects
-      .filter(color => typeof color === 'object' && color !== null)
-      .map(color => [color.code, { name: color.name, code: color.code }])
-  ).values());
+  
+  // Получаем уникальные цвета из продуктов
+  const products = await Product.find({ isSale: true }).lean();
+  const uniqueColors = Array.from(
+    new Set(
+      products.map(product => 
+        JSON.stringify({ name: product.color.name, code: product.color.code })
+      )
+    )
+  ).map(colorStr => JSON.parse(colorStr));
 
   return (
     <div className="bg-white min-h-screen flex flex-col">
@@ -35,7 +34,10 @@ export default async function SalePage() {
             </div>
 
             <Suspense fallback={<Loading />}>
-              <CatalogContent
+              <ClientFilterWrapper
+                categories={categories.map(cat => cat.name)}
+                sizes={uniqueSizes}
+                colors={uniqueColors}
               />
             </Suspense>
           </div>

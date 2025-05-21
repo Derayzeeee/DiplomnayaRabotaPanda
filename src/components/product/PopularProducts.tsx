@@ -43,10 +43,10 @@ export default function PopularProducts() {
 
   if (isLoading) {
     return (
-      <section className="py-16 px-4 bg-gray-50">
+      <section className="py-16 px-4 bg-white"> {/* Изменен фон на белый */}
         <div className="container mx-auto">
           <div className="flex justify-center items-center min-h-[200px]">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+            <div className="animate-spin rounded-none h-12 w-12 border-2 border-black"></div> {/* Изменен спиннер */}
           </div>
         </div>
       </section>
@@ -58,17 +58,18 @@ export default function PopularProducts() {
   }
 
   return (
-    <section className="py-16 px-4 bg-gray-50">
+    <section className="py-16 px-4 bg-white"> {/* Изменен фон на белый */}
       <div className="container mx-auto">
-        <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-          Рекомендуемые товары
+        <h2 className="text-3xl font-bold text-black mb-12 text-center tracking-tight">
+          Популярные товары
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"> {/* Увеличен gap */}
           {products.map((product) => (
             <MotionDiv
               key={product.id}
-              whileHover={{ scale: 1.02 }}
-              className="bg-white rounded-lg shadow hover:shadow-lg transition-all duration-300 overflow-hidden"
+              whileHover={{ y: -5 }} // Изменена анимация на подъем
+              className="group bg-white border-2 border-black transition-all duration-300 overflow-hidden" 
+              // Добавлена жирная рамка, убраны тени и скругления
             >
               <Link href={`/product/${product.id}`}>
                 <div className="aspect-[4/5] relative">
@@ -76,29 +77,29 @@ export default function PopularProducts() {
                     src={product.images[0]}
                     alt={product.name}
                     fill
-                    className="object-cover hover:scale-105 transition-transform duration-500"
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
                   {/* Badges */}
-                  <div className="absolute top-2 left-2 flex flex-col gap-2">
+                  <div className="absolute top-4 left-4 flex flex-col gap-2">
                     {product.status === 'NEW' && (
-                      <span className="bg-black text-white px-3 py-1 text-sm font-medium">
+                      <span className="bg-white text-black px-4 py-1 text-sm font-medium border-2 border-black">
                         Новинка
                       </span>
                     )}
                     {product.status === 'SALE' && (
-                      <span className="bg-red-500 text-white px-3 py-1 text-sm font-medium">
+                      <span className="bg-black text-white px-4 py-1 text-sm font-medium border-2 border-white">
                         Скидка
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="p-4">
-                  <h3 className="text-lg font-medium text-gray-900 hover:text-gray-700 transition-colors duration-300">
+                <div className="p-6"> {/* Увеличен padding */}
+                  <h3 className="text-lg font-medium text-black group-hover:text-gray-600 transition-colors duration-300">
                     {product.name}
                   </h3>
-                  <div className="mt-2 flex items-center gap-2">
-                    <span className="text-lg font-bold text-gray-900">
+                  <div className="mt-3 flex items-center gap-2">
+                    <span className="text-xl font-bold text-black">
                       {product.price.toLocaleString('ru-RU')} BYN
                     </span>
                   </div>
