@@ -45,6 +45,10 @@ export async function POST(req: NextRequest) {
 
     const cartItem: CartItem = await req.json();
 
+    if (!cartItem.oldPrice) {
+      delete cartItem.oldPrice;
+    }
+
     let cart = await Cart.findOne({ userId: userData.userId });
     if (!cart) {
       cart = new Cart({ userId: userData.userId, items: [] });

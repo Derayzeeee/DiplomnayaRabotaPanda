@@ -14,7 +14,8 @@ interface AddToCartButtonProps {
   image: string;
   selectedSize: string;
   selectedColor: Color;
-  stockQuantity: number; // Добавляем проверку количества
+  stockQuantity: number;
+  isSale: boolean; // Добавляем проверку количества
 }
 
 export default function AddToCartButton({
@@ -25,7 +26,8 @@ export default function AddToCartButton({
   image,
   selectedSize,
   selectedColor,
-  stockQuantity, // Добавляем параметр
+  stockQuantity,
+  isSale // Добавляем параметр
 }: AddToCartButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -78,7 +80,7 @@ export default function AddToCartButton({
         productId,
         name,
         price,
-        oldPrice,
+        oldPrice: isSale ? oldPrice : undefined,
         image,
         size: selectedSize,
         color: selectedColor,

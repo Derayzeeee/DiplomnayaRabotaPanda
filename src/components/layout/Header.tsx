@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { HeartIcon } from '@heroicons/react/24/outline';
 
 
 export const Header = () => {
@@ -15,14 +14,14 @@ export const Header = () => {
     return isAuthenticated ? (
       <Link 
         href="/profile" 
-        className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors"
+        className="px-4 py-1 bg-black text-white  hover:bg-gray-800 transition-colors"
       >
         Профиль
       </Link>
     ) : (
       <Link 
         href="/login" 
-        className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors"
+        className="px-4 py-2 bg-black text-white  hover:bg-gray-800 transition-colors"
       >
         Войти
       </Link>
@@ -114,6 +113,12 @@ export const Header = () => {
               className="block text-gray-700 hover:text-black transition-colors"
             >
               Избранное
+            </Link>
+            <Link 
+              href="/cart" 
+              className="block text-gray-700 hover:text-black transition-colors"
+            >
+              Корзина
             </Link>
             <div className="block">
               <AuthButton />

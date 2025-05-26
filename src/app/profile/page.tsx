@@ -16,11 +16,11 @@ export default function ProfilePage() {
   const router = useRouter();
   const { updateAuthStatus } = useAuth();
 
+  // Оставляем всю логику без изменений
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
         setIsLoading(true);
-        // Проверяем авторизацию
         const response = await fetch('/api/profile', {
           credentials: 'include',
         });
@@ -53,7 +53,7 @@ export default function ProfilePage() {
         throw new Error('Ошибка при выходе');
       }
 
-      await updateAuthStatus(); // Обновляем статус авторизации
+      await updateAuthStatus();
       router.push('/login');
     } catch (error) {
       console.error('Ошибка при выходе:', error);
@@ -63,7 +63,7 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+        <div className="animate-spin h-32 w-32 border-2 border-black"></div> {/* Изменен стиль спиннера */}
       </div>
     );
   }
@@ -73,32 +73,33 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white py-16 px-4 sm:px-6 lg:px-8"> {/* Изменен фон и отступы */}
       <div className="max-w-3xl mx-auto">
-        <div className="bg-white shadow rounded-lg p-6">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Личный кабинет</h1>
+        <div className="border-0 border-black p-8"> {/* Заменены тени на рамку */}
+          <div className="text-center mb-12"> {/* Увеличен отступ */}
+            <h1 className="text-3xl font-bold text-black mb-3">Личный кабинет</h1>
             <p className="text-gray-600">Управляйте своим профилем и настройками</p>
           </div>
 
-          <div className="border-t border-gray-200 pt-6">
-            <dl className="divide-y divide-gray-200">
+          <div className="border-t-2 border-black pt-8"> {/* Изменена толщина разделителя */}
+            <dl>
               <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-sm font-medium text-gray-500">Email</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                <dt className="text-sm font-medium text-gray-600">Email</dt>
+                <dd className="mt-1 text-sm text-black sm:mt-0 sm:col-span-2">
                   {user.email}
                 </dd>
               </div>
             </dl>
           </div>
 
-          <div className="mt-6 space-y-4">
+          <div className="mt-8 space-y-6"> {/* Увеличены отступы */}
             {/* Секция заказов */}
-            <div className="border-t border-gray-200 pt-4">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Мои заказы</h2>
+            <div className="border-t-2 border-black pt-6">
+              <h2 className="text-xl font-bold text-black mb-6">Мои заказы</h2>
               <button
                 type="button"
-                className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
+                className="w-full py-3 px-4 border-2 border-black text-white bg-black 
+                         hover:bg-gray-900 transition-colors text-sm font-medium"
                 onClick={() => router.push('/orders')}
               >
                 Просмотреть заказы
@@ -106,20 +107,14 @@ export default function ProfilePage() {
             </div>
 
             {/* Секция управления профилем */}
-            <div className="border-t border-gray-200 pt-4">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Управление профилем</h2>
-              <div className="space-y-3">
+            <div className="border-t-2 border-black pt-6">
+              <h2 className="text-xl font-bold text-black mb-6">Управление профилем</h2>
+              <div className="space-y-4">
+                
                 <button
                   type="button"
-                  className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
-                  onClick={() => router.push('/profile/edit')}
-                >
-                  Редактировать профиль
-                </button>
-
-                <button
-                  type="button"
-                  className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
+                  className="w-full py-3 px-4 border-2 border-black text-white bg-black 
+                           hover:bg-gray-900 transition-colors text-sm font-medium"
                   onClick={() => router.push('/profile/change-password')}
                 >
                   Изменить пароль
@@ -128,7 +123,8 @@ export default function ProfilePage() {
                 {user.role === 'admin' && (
                   <button
                     type="button"
-                    className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    className="w-full py-3 px-4 border-2 border-black text-black bg-white 
+                             hover:bg-gray-100 transition-colors text-sm font-medium"
                     onClick={() => router.push('/admin')}
                   >
                     Панель администратора
@@ -137,7 +133,8 @@ export default function ProfilePage() {
 
                 <button
                   type="button"
-                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
+                  className="w-full py-3 px-4 border-2 border-black text-black bg-white 
+                           hover:bg-gray-100 transition-colors text-sm font-medium"
                   onClick={handleLogout}
                 >
                   Выйти из аккаунта
