@@ -18,7 +18,6 @@ export default function SizeSelector({ sizes, selectedSize, onSelect }: SizeSele
 
   return (
     <div>
-      <h3 className="text-sm font-medium text-gray-900">Размер</h3>
       <div className="mt-4 grid grid-cols-4 gap-2">
         {sizes.map((size) => (
           <button

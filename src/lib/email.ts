@@ -47,7 +47,6 @@ export async function sendPasswordResetEmail(email: string, resetToken: string) 
           
           <p style="color: #666; font-size: 14px;">
             Если вы не запрашивали сброс пароля, просто проигнорируйте это письмо.<br>
-            Ссылка действительна в течение 1 часа.
           </p>
           
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #888; font-size: 12px;">

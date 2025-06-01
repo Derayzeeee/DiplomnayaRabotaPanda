@@ -41,7 +41,7 @@ export default function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/returns" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                  <Link href="/return" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
                     Возврат
                   </Link>
                 </li>
@@ -78,7 +78,7 @@ export default function Footer() {
         {/* Нижняя часть футера */}
         <div className="border-t border-gray-200 py-8">
           <p className="text-sm text-gray-600 text-center">
-            © 2025 ClothingStore. Все права защищены.
+            © 2025 PandaStore. Все права защищены.
           </p>
         </div>
       </div>

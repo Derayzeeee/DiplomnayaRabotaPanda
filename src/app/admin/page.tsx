@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ProductWithId } from '@/types/product';
+import ConfirmationModal from '@/components/ui/ConfirmationModal';
 
 // Компонент для отображения статуса
 const StatusBadge = ({ 
@@ -28,6 +29,7 @@ const StatusBadge = ({
 
 export default function AdminPanel() {
   const [products, setProducts] = useState<ProductWithId[]>([]);
+  const [productToDelete, setProductToDelete] = useState<ProductWithId | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -40,38 +42,41 @@ export default function AdminPanel() {
     setProducts(data);
   };
 
-  const handleDeleteProduct = async (productId: string) => {
-    if (window.confirm('Вы уверены, что хотите удалить этот товар?')) {
-      try {
-        const response = await fetch(`/api/products?id=${productId}`, {
-          method: 'DELETE',
-        });
+  const handleDeleteProduct = async (product: ProductWithId) => {
+    setProductToDelete(product);
+  };
 
-        if (response.ok) {
-          setProducts(products.filter(product => product._id !== productId));
-        } else {
-          const error = await response.json();
-          alert(`Ошибка при удалении товара: ${error.error}`);
-        }
-      } catch (error) {
-        console.error('Error deleting product:', error);
-        alert('Произошла ошибка при удалении товара');
+  const confirmDelete = async () => {
+    if (!productToDelete) return;
+
+    try {
+      const response = await fetch(`/api/products?id=${productToDelete._id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setProducts(products.filter(product => product._id !== productToDelete._id));
+      } else {
+        const error = await response.json();
+        alert(`Ошибка при удалении товара: ${error.error}`);
       }
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      alert('Произошла ошибка при удалении товара');
+    } finally {
+      setProductToDelete(null);
     }
   };
 
   const getStockStatus = (product: ProductWithId) => {
-    // Если товар помечен как "Нет в наличии"
     if (!product.inStock) {
       return { type: 'error' as const, text: 'Нет в наличии' };
     }
 
-    // Если количество равно 0
     if (product.stockQuantity === 0) {
       return { type: 'error' as const, text: 'Закончился' };
     }
 
-    // Если количество меньше или равно пороговому значению
     if (product.stockQuantity <= product.lowStockThreshold) {
       return { 
         type: 'warning' as const, 
@@ -79,7 +84,6 @@ export default function AdminPanel() {
       };
     }
 
-    // В остальных случаях - в наличии
     return { 
       type: 'success' as const, 
       text: 'В наличии'
@@ -182,7 +186,7 @@ export default function AdminPanel() {
                     Редактировать
                   </button>
                   <button
-                    onClick={() => handleDeleteProduct(product._id)}
+                    onClick={() => handleDeleteProduct(product)}
                     className="text-red-600 hover:text-red-900"
                   >
                     Удалить
@@ -193,6 +197,17 @@ export default function AdminPanel() {
           </tbody>
         </table>
       </div>
+
+      <ConfirmationModal
+        isOpen={!!productToDelete}
+        onClose={() => setProductToDelete(null)}
+        onConfirm={confirmDelete}
+        title="Удаление товара"
+        message={`Вы точно хотите удалить товар "${productToDelete?.name}" из каталога? Это действие необратимо и не может быть отменено!`}
+        type="danger"
+        confirmButtonText="Удалить"
+        cancelButtonText="Отмена"
+      />
     </div>
   );
 }

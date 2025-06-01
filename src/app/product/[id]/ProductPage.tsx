@@ -7,6 +7,7 @@ import ProductGallery from '@/components/product/ProductGallery';
 import SizeSelector from '@/components/product/SizeSelector';
 import FavoriteButton from '@/components/product/FavoriteButton';
 import SizeChart from '@/components/common/SizeChart';
+import Toast from '@/components/ui/Toast';
 import Loading from './loading';
 import Footer from '@/components/layout/Footer';
 import RelatedProducts from './RelatedProducts';
@@ -25,6 +26,9 @@ export default function ProductPage({ id }: ProductPageProps) {
   const [quantity, setQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
   const { addItem } = useCart();
   const { isAuthenticated } = useAuth();
   const router = useRouter();
@@ -49,6 +53,12 @@ export default function ProductPage({ id }: ProductPageProps) {
     fetchProduct();
   }, [id]);
 
+  const showNotification = (message: string, type: 'success' | 'error') => {
+    setToastMessage(message);
+    setToastType(type);
+    setShowToast(true);
+  };
+
   const getStockStatus = () => {
     if (!product) return { text: 'Нет в наличии', type: 'error' };
 
@@ -70,19 +80,17 @@ export default function ProductPage({ id }: ProductPageProps) {
     }
     
     if (!product || !selectedSize) {
-      alert('Пожалуйста, выберите размер');
+      showNotification('Пожалуйста, выберите размер', 'error');
       return;
     }
 
-    // Проверка наличия товара
     if (product.stockQuantity === 0) {
-      alert('К сожалению, товар закончился');
+      showNotification('К сожалению, товар закончился', 'error');
       return;
     }
 
-    // Проверка достаточного количества
     if (product.stockQuantity < quantity) {
-      alert(`К сожалению, доступно только ${product.stockQuantity} шт.`);
+      showNotification(`К сожалению, доступно только ${product.stockQuantity} шт.`, 'error');
       setQuantity(product.stockQuantity);
       return;
     }
@@ -99,10 +107,10 @@ export default function ProductPage({ id }: ProductPageProps) {
         color: product.color,
         quantity,
       });
-      alert('Товар добавлен в корзину');
+      showNotification('Товар успешно добавлен в корзину', 'success');
     } catch (error) {
       console.error('Error adding to cart:', error);
-      alert('Не удалось добавить товар в корзину');
+      showNotification('Не удалось добавить товар в корзину', 'error');
     } finally {
       setIsAddingToCart(false);
     }
@@ -118,14 +126,11 @@ export default function ProductPage({ id }: ProductPageProps) {
     <div className="bg-white min-h-screen flex flex-col">
       <main className="flex-grow container mx-auto px-4 py-8 pt-24">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Галерея изображений */}
           <div>
             <ProductGallery images={product.images} productName={product.name} />
           </div>
 
-          {/* Информация о продукте */}
           <div className="space-y-6">
-            {/* Заголовок и цена */}
             <div>
               <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
               <div className="mt-4 flex items-center justify-between">
@@ -168,14 +173,11 @@ export default function ProductPage({ id }: ProductPageProps) {
               </div>
             </div>
 
-            {/* Описание */}
             <div className="prose prose-sm">
               <p>{product.description}</p>
             </div>
 
-            {/* Выбор размера и количества */}
             <div className="space-y-4">
-              {/* Размеры и таблица размеров */}
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-sm font-medium text-gray-900">Размеры</h3>
@@ -188,7 +190,6 @@ export default function ProductPage({ id }: ProductPageProps) {
                 />
               </div>
 
-              {/* Цвет */}
               <div>
                 <h3 className="text-sm font-medium text-gray-900">Цвет</h3>
                 <div className="flex items-center gap-2 mt-2">
@@ -201,7 +202,6 @@ export default function ProductPage({ id }: ProductPageProps) {
                 </div>
               </div>
 
-              {/* Количество и кнопка добавления в корзину */}
               <div className="flex items-center gap-4">
                 <div className="flex items-center border rounded-md">
                   <button
@@ -244,17 +244,14 @@ export default function ProductPage({ id }: ProductPageProps) {
               </div>
             </div>
 
-            {/* Дополнительная информация */}
             <div className="border-t border-gray-200 pt-6 space-y-4">
-              {/* Доставка */}
               <div>
                 <h3 className="text-sm font-medium text-gray-900">Доставка</h3>
                 <p className="mt-2 text-sm text-gray-600">
-                  1-3 рабочих дня. Бесплатная доставка при заказе от 5000 BYN
+                  Бесплатная доставка при заказе от 200 BYN
                 </p>
               </div>
               
-              {/* Статус наличия */}
               <div>
                 <h3 className="text-sm font-medium text-gray-900">Статус</h3>
                 <div className="mt-2">
@@ -273,7 +270,6 @@ export default function ProductPage({ id }: ProductPageProps) {
                 </div>
               </div>
 
-              {/* Информация о росте */}
               {showHeightInfo && product.heights && product.heights.length > 0 && (
                 <div>
                   <h3 className="text-sm font-medium text-gray-900">Рост</h3>
@@ -290,7 +286,6 @@ export default function ProductPage({ id }: ProductPageProps) {
                 </div>
               )}
 
-              {/* Категория */}
               <div>
                 <h3 className="text-sm font-medium text-gray-900">Категория</h3>
                 <p className="mt-2 text-sm text-gray-600">
@@ -301,7 +296,6 @@ export default function ProductPage({ id }: ProductPageProps) {
           </div>
         </div>
 
-        {/* Похожие товары */}
         {relatedProducts.length > 0 && (
           <div className="mt-16">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
@@ -311,6 +305,12 @@ export default function ProductPage({ id }: ProductPageProps) {
           </div>
         )}
       </main>
+      <Toast
+        show={showToast}
+        message={toastMessage}
+        type={toastType}
+        onClose={() => setShowToast(false)}
+      />
     </div>
   );
 }

@@ -9,17 +9,16 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero секция - убираем затемнение */}
-      <section className="relative h-[80vh] overflow-hidden">
-        <Image
-          src="/images/hero-bg.jpg"
-          alt="Hero banner"
-          fill
-          className="object-cover"
-          priority
-        />
+      <section className="relative h-[100vh] overflow-hidden">
+        <div
+          className="absolute inset-0 bg-fixed bg-cover bg-center"
+          style={{ backgroundImage: 'url(/images/hero-bg.jpg)' }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/90"></div>
+        </div>
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center text-white space-y-8 px-4 bg-black/80 py-10"> {/* Добавляем фон только для текста */}
-            <motion.h1 
+          <div className="text-center text-white space-y-8 px-4">
+            <motion.h1
               className="text-5xl md:text-6xl font-bold tracking-tight"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -32,11 +31,9 @@ export default function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              <Link 
+              <Link
                 href="/catalog"
-                className="inline-block bg-white text-black px-8 py-3 text-lg font-medium
-                         border-2 border-white hover:bg-black hover:text-white 
-                         transition-all duration-300 transform hover:scale-105"
+                className="inline-block bg-white text-black px-8 py-3 text-lg font-medium border-2 border-white hover:bg-black hover:text-white transition-all duration-300 transform hover:scale-105"
               >
                 Смотреть каталог
               </Link>

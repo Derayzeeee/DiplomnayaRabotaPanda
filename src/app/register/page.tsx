@@ -50,7 +50,7 @@ export default function Register() {
     if (!/[0-9]/.test(password)) {
       errors.push('Минимум 1 цифра');
     }
-    if (!/[!@#$%^&*]/.test(password)) {
+    if (!/[!@#$%^&*-]/.test(password)) {
       errors.push('Минимум 1 специальный символ (!@#$%^&*)');
     }
 

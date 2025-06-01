@@ -105,6 +105,7 @@ export default function Filters({
       heights: type === 'heights' ? newSelection : selectedHeights,
     });
   };
+  
 
   const handleResetFilters = () => {
     setSelectedCategories([]);
@@ -287,7 +288,7 @@ export default function Filters({
               title={color.name}
             >
               <div
-                className={`w-6 h-6 rounded-full transition-transform duration-200
+                className={`w-6 h-6 ring-1 rounded-full transition-transform duration-200
                   ${selectedColors.includes(color.code)
                     ? 'ring-1 ring-panda-black ring-offset-1'
                     : 'hover:scale-110'

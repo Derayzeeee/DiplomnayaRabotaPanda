@@ -12,7 +12,6 @@ export interface JWTPayload {
   exp?: number;
 }
 
-// Функция для получения данных из токена
 export async function getTokenData(requiredRole?: 'admin' | 'user'): Promise<JWTPayload | null> {
   try {
     const requestCookies = new Request('http://localhost').headers;
@@ -36,7 +35,6 @@ export async function getTokenData(requiredRole?: 'admin' | 'user'): Promise<JWT
 
     const userData = jwt.verify(token, JWT_SECRET) as JWTPayload;
 
-    // Проверка роли, если она указана
     if (requiredRole && userData.role !== requiredRole) {
       return null;
     }
@@ -48,7 +46,6 @@ export async function getTokenData(requiredRole?: 'admin' | 'user'): Promise<JWT
   }
 }
 
-// Функция для получения пользователя из токена
 export function getUserFromToken(request: NextRequest, requiredRole?: 'admin' | 'user'): JWTPayload | null {
   try {
     const token = request.cookies.get('token')?.value;
@@ -59,7 +56,6 @@ export function getUserFromToken(request: NextRequest, requiredRole?: 'admin' | 
 
     const userData = jwt.verify(token, JWT_SECRET) as JWTPayload;
 
-    // Проверка роли, если она указана
     if (requiredRole && userData.role !== requiredRole) {
       return null;
     }
@@ -71,32 +67,27 @@ export function getUserFromToken(request: NextRequest, requiredRole?: 'admin' | 
   }
 }
 
-// Функция для выхода из системы
 export function logout(): NextResponse {
   const response = NextResponse.json({ message: 'Logged out' });
   response.cookies.delete('token');
   return response;
 }
 
-// Функция для проверки аутентификации
 export async function isAuthenticated(): Promise<boolean> {
   const userData = await getTokenData();
   return userData !== null;
 }
 
-// Функция для проверки прав администратора
 export async function isAdmin(): Promise<boolean> {
   const userData = await getTokenData();
   return userData?.role === 'admin';
 }
 
-// Функция для проверки прав администратора из запроса
 export function isAdminFromRequest(request: NextRequest): boolean {
   const userData = getUserFromToken(request);
   return userData?.role === 'admin';
 }
 
-// Middleware для проверки прав администратора
 export async function checkAdminAccess(request: NextRequest): Promise<NextResponse | null> {
   const userData = getUserFromToken(request);
   
@@ -110,14 +101,12 @@ export async function checkAdminAccess(request: NextRequest): Promise<NextRespon
   return null;
 }
 
-// Функция для создания JWT токена
 export function createToken(payload: JWTPayload): string {
   return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: '7d', // Токен действителен 7 дней
+    expiresIn: '7d',
   });
 }
 
-// Функция для установки токена в куки
 export function setTokenCookie(token: string): NextResponse {
   const response = NextResponse.json({ status: 'success' });
   response.cookies.set({
@@ -126,12 +115,11 @@ export function setTokenCookie(token: string): NextResponse {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60, // 7 дней в секундах
+    maxAge: 7 * 24 * 60 * 60, 
   });
   return response;
 }
 
-// Вспомогательная функция для получения cookies из request
 export function getCookiesFromRequest(request: Request): { [key: string]: string } {
   const cookieHeader = request.headers.get('cookie');
   if (!cookieHeader) return {};
@@ -143,22 +131,18 @@ export function getCookiesFromRequest(request: Request): { [key: string]: string
   }, {});
 }
 
-// Функция для валидации роли пользователя
 export function validateUserRole(role: string): role is 'admin' | 'user' {
   return role === 'admin' || role === 'user';
 }
 
-// Функция для обновления токена
 export function refreshToken(currentToken: string): string | null {
   try {
     const decoded = jwt.verify(currentToken, JWT_SECRET) as JWTPayload;
     
-    // Проверяем, не истекает ли токен в ближайшие 24 часа
     const expirationDate = (decoded.exp || 0) * 1000;
     const twentyFourHoursFromNow = Date.now() + 24 * 60 * 60 * 1000;
     
     if (expirationDate - Date.now() < twentyFourHoursFromNow) {
-      // Создаем новый токен с тем же payload
       const newToken = createToken({
         userId: decoded.userId,
         email: decoded.email,
@@ -168,21 +152,20 @@ export function refreshToken(currentToken: string): string | null {
       return newToken;
     }
     
-    return null; // Токен еще действителен
+    return null;
   } catch (error) {
     console.error('Error refreshing token:', error);
     return null;
   }
 }
 
-// Функция для проверки срока действия токена
 export function isTokenExpired(token: string): boolean {
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
     const currentTime = Math.floor(Date.now() / 1000);
     return (decoded.exp || 0) < currentTime;
   } catch (error) {
-    return true; // В случае ошибки считаем токен просроченным
+    return true;
   }
 }
 

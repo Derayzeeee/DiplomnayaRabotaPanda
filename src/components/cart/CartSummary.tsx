@@ -28,8 +28,6 @@ export default function CartSummary() {
         <span>{cart.totalAmount.toLocaleString('ru-RU')} BYN</span>
       </div>
       <div className="flex justify-between text-base">
-        <span>Доставка</span>
-        <span>Бесплатно</span>
       </div>
       <div className="border-t-2 border-black pt-4 mt-4"> {/* Сделали разделитель жирнее */}
         <div className="flex justify-between text-lg font-bold"> {/* Увеличили жирность */}

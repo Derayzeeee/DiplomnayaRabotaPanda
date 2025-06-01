@@ -289,12 +289,10 @@ export default function OrdersPage() {
                           <span>{order.totalAmount.toLocaleString('ru-RU')} BYN</span>
                         </div>
                         <div className="flex justify-between text-sm text-gray-500">
-                          <span>Доставка</span>
-                          <span>Бесплатно</span>
                         </div>
                         <div className="border-t pt-2 mt-2">
                           <div className="flex justify-between text-base font-medium text-gray-900">
-                            <span>Итого</span>
+                            <span>Итого c учетом доставки</span>
                             <span>{order.totalAmount.toLocaleString('ru-RU')} BYN</span>
                           </div>
                         </div>

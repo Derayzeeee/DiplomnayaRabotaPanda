@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -14,20 +14,54 @@ interface ShippingAddress {
   postalCode: string;
 }
 
+type DeliveryMethod = 'pickup' | 'courier' | 'post';
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart } = useCart();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // Добавляем состояние для обработки ошибок
   const [error, setError] = useState<string | null>(null);
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('pickup');
+  const [totalWithDelivery, setTotalWithDelivery] = useState(cart?.totalAmount || 0);
   
   const [formData, setFormData] = useState<ShippingAddress>({
     fullName: '',
     phoneNumber: '',
-    address: '',
-    city: '',
-    postalCode: ''
+    address: 'г. Брест, Советская ул., 97', // Значение по умолчанию для самовывоза
+    city: 'Брест', // Значение по умолчанию для самовывоза
+    postalCode: '224030' // Значение по умолчанию для самовывоза
   });
+
+  // Обновляем общую сумму при изменении способа доставки или суммы корзины
+  useEffect(() => {
+    if (!cart) return;
+
+    let newTotal = cart.totalAmount;
+    if (deliveryMethod === 'courier' && cart.totalAmount < 200) {
+      newTotal += 5;
+    }
+    setTotalWithDelivery(newTotal);
+  }, [deliveryMethod, cart]);
+
+  const handleDeliveryChange = (method: DeliveryMethod) => {
+    setDeliveryMethod(method);
+
+    if (method === 'pickup') {
+      setFormData(prev => ({
+        ...prev,
+        address: 'г. Брест, Советская ул., 97',
+        city: 'Брест',
+        postalCode: '224030'
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        address: '',
+        city: '',
+        postalCode: ''
+      }));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +69,18 @@ export default function CheckoutPage() {
     if (!cart || cart.items.length === 0) {
       setError('Корзина пуста');
       return;
+    }
+
+    if (!formData.fullName.trim() || !formData.phoneNumber.trim()) {
+      setError('Пожалуйста, заполните все обязательные поля');
+      return;
+    }
+
+    if (deliveryMethod !== 'pickup') {
+      if (!formData.address.trim() || !formData.city.trim() || !formData.postalCode.trim()) {
+        setError('Пожалуйста, заполните адрес доставки');
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -48,8 +94,9 @@ export default function CheckoutPage() {
         },
         body: JSON.stringify({
           items: cart.items,
-          totalAmount: cart.totalAmount,
-          shippingAddress: formData
+          totalAmount: totalWithDelivery,
+          shippingAddress: formData,
+          deliveryMethod: deliveryMethod
         }),
       });
 
@@ -59,10 +106,10 @@ export default function CheckoutPage() {
       }
 
       if (!orderResponse.ok) {
-        throw new Error('Failed to create order');
+        const errorData = await orderResponse.json();
+        throw new Error(errorData.error || 'Failed to create order');
       }
 
-      // Очистка корзины после успешного оформления заказа
       const clearResponse = await fetch('/api/cart/clear', {
         method: 'POST',
         headers: {
@@ -131,6 +178,83 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div>
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Способ доставки */}
+              <div className="mb-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Способ доставки</h3>
+                <div className="space-y-4">
+                  <label className="flex items-center space-x-3">
+                    <input
+                      type="radio"
+                      name="delivery"
+                      value="pickup"
+                      checked={deliveryMethod === 'pickup'}
+                      onChange={(e) => handleDeliveryChange('pickup')}
+                      className="h-4 w-4 text-black border-gray-300 focus:ring-black"
+                    />
+                    <span className="text-sm text-gray-900">Самовывоз (бесплатно)</span>
+                  </label>
+                  <label className="flex items-center space-x-3">
+                    <input
+                      type="radio"
+                      name="delivery"
+                      value="courier"
+                      checked={deliveryMethod === 'courier'}
+                      onChange={(e) => handleDeliveryChange('courier')}
+                      className="h-4 w-4 text-black border-gray-300 focus:ring-black"
+                    />
+                    <span className="text-sm text-gray-900">
+                      Курьерская доставка 
+                      {cart.totalAmount >= 200 
+                        ? ' (бесплатно)' 
+                        : ' (5 BYN)'}
+                    </span>
+                  </label>
+                  <label className="flex items-center space-x-3">
+                    <input
+                      type="radio"
+                      name="delivery"
+                      value="post"
+                      checked={deliveryMethod === 'post'}
+                      onChange={(e) => handleDeliveryChange('post')}
+                      className="h-4 w-4 text-black border-gray-300 focus:ring-black"
+                    />
+                    <span className="text-sm text-gray-900">Почтой Беларуси (по тарифам почты)</span>
+                  </label>
+                </div>
+                
+                {/* Информация о способе доставки */}
+                <div className="mt-4 p-4 bg-gray-50 rounded-md text-sm text-gray-600">
+                  {deliveryMethod === 'pickup' && (
+                    <p>
+                      Вы можете забрать заказ по адресу: г. Брест, Советская ул., 97<br />
+                      Время работы: Пн-Пт с 9:00 до 18:00
+                    </p>
+                  )}
+                  {deliveryMethod === 'courier' && (
+                    <p>
+                      Доставка осуществляется на следующий рабочий день.<br />
+                      {cart.totalAmount >= 200 
+                        ? 'При заказе от 200 BYN доставка бесплатная.' 
+                        : 'Стоимость доставки 5 BYN. При заказе от 200 BYN доставка бесплатная.'}
+                    </p>
+                  )}
+                  {deliveryMethod === 'post' && (
+                    <p>
+                      Доставка осуществляется Почтой Беларуси.<br />
+                      Срок доставки 3-5 рабочих дней.<br />
+                      Стоимость рассчитывается по тарифам Почты Беларуси.
+                    </p>
+                  )}
+                </div>
+
+                <div className="mt-4">
+                  <Link href="/delivery" className="text-sm text-black hover:underline">
+                    Подробнее об условиях доставки
+                  </Link>
+                </div>
+              </div>
+
+              {/* Контактная информация */}
               <div>
                 <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
                   ФИО
@@ -161,50 +285,55 @@ export default function CheckoutPage() {
                 />
               </div>
 
-              <div>
-                <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-                  Адрес
-                </label>
-                <input
-                  type="text"
-                  id="address"
-                  name="address"
-                  required
-                  value={formData.address}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
-                />
-              </div>
+              {/* Адрес доставки (скрыт при самовывозе) */}
+              {deliveryMethod !== 'pickup' && (
+                <>
+                  <div>
+                    <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+                      Адрес
+                    </label>
+                    <input
+                      type="text"
+                      id="address"
+                      name="address"
+                      required
+                      value={formData.address}
+                      onChange={handleChange}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+                    />
+                  </div>
 
-              <div>
-                <label htmlFor="city" className="block text-sm font-medium text-gray-700">
-                  Город
-                </label>
-                <input
-                  type="text"
-                  id="city"
-                  name="city"
-                  required
-                  value={formData.city}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
-                />
-              </div>
+                  <div>
+                    <label htmlFor="city" className="block text-sm font-medium text-gray-700">
+                      Город
+                    </label>
+                    <input
+                      type="text"
+                      id="city"
+                      name="city"
+                      required
+                      value={formData.city}
+                      onChange={handleChange}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+                    />
+                  </div>
 
-              <div>
-                <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700">
-                  Почтовый индекс
-                </label>
-                <input
-                  type="text"
-                  id="postalCode"
-                  name="postalCode"
-                  required
-                  value={formData.postalCode}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
-                />
-              </div>
+                  <div>
+                    <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700">
+                      Почтовый индекс
+                    </label>
+                    <input
+                      type="text"
+                      id="postalCode"
+                      name="postalCode"
+                      required
+                      value={formData.postalCode}
+                      onChange={handleChange}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+                    />
+                  </div>
+                </>
+              )}
 
               <button
                 type="submit"
@@ -216,6 +345,7 @@ export default function CheckoutPage() {
             </form>
           </div>
 
+          {/* Сводка заказа */}
           <div>
             <div className="bg-gray-50 p-6 rounded-lg">
               <h2 className="text-lg font-medium text-gray-900 mb-4">
@@ -250,9 +380,29 @@ export default function CheckoutPage() {
                   </div>
                 ))}
                 <div className="border-t pt-4 mt-4">
-                  <div className="flex justify-between text-lg font-medium">
-                    <span>Итого</span>
+                  <div className="flex justify-between text-base text-gray-500 mb-2">
+                    <span>Сумма заказа</span>
                     <span>{cart.totalAmount.toLocaleString('ru-RU')} BYN</span>
+                  </div>
+                  {deliveryMethod === 'courier' && cart.totalAmount < 200 && (
+                    <div className="flex justify-between text-base text-gray-500 mb-2">
+                      <span>Доставка</span>
+                      <span>5.00 BYN</span>
+                    </div>
+                  )}
+                  {deliveryMethod === 'post' && (
+                    <div className="flex justify-between text-base text-gray-500 mb-2">
+                      <span>Доставка</span>
+                      <span>по тарифам почты</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-lg font-medium text-gray-900 mt-4">
+                    <span>Итого к оплате</span>
+                    <span>
+                      {deliveryMethod === 'post' 
+                        ? `${cart.totalAmount.toLocaleString('ru-RU')} BYN + доставка` 
+                        : `${totalWithDelivery.toLocaleString('ru-RU')} BYN`}
+                    </span>
                   </div>
                 </div>
               </div>
