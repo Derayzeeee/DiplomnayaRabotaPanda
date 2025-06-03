@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import ProductCard from '@/components/product/ProductCard';
 import { useProductFilters } from '@/hooks/useProductFilters';
-import type { ProductWithId } from '@/types/product';
+import type { ProductWithId, Color } from '@/types/product';
 
 type SortOption = 'newest' | 'priceAsc' | 'priceDesc';
 
@@ -13,15 +13,20 @@ interface NewProductsListProps {
     categories: string[];
     sizes: string[];
     colors: string[];
+    heights: string[];
   };
+  availableColors: Color[];
 }
 
-export default function NewProductsList({ initialFilters }: NewProductsListProps) {
+export default function NewProductsList({ initialFilters, availableColors }: NewProductsListProps) {
   const [products, setProducts] = useState<ProductWithId[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [loading, setLoading] = useState(true);
 
-  const { filterProducts, updateFilters } = useProductFilters(products);
+  const { filterProducts, updateFilters } = useProductFilters({ 
+    products, 
+    colors: availableColors
+  });
 
   useEffect(() => {
     fetchNewProducts();

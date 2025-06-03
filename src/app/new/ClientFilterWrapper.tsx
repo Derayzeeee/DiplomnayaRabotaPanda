@@ -3,11 +3,7 @@
 import { useState } from 'react';
 import FilterWrapper from '@/components/catalog/FilterWrapper';
 import NewProductsList from './NewProductsList';
-
-interface Color {
-  name: string;
-  code: string;
-}
+import { Color } from '@/types/product';
 
 interface ClientFilterWrapperProps {
   categories: string[];
@@ -48,7 +44,10 @@ export default function ClientFilterWrapper({ categories, sizes, colors }: Clien
 
       {/* Список товаров */}
       <div className="flex-1">
-        <NewProductsList initialFilters={filters} />
+        <NewProductsList 
+          initialFilters={filters}
+          availableColors={formattedColors}
+        />
       </div>
     </div>
   );
