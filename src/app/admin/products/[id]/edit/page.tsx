@@ -147,7 +147,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 mt-20">
       <h1 className="text-2xl font-bold mb-6">Редактировать товар</h1>
       <ProductForm
         initialData={product}

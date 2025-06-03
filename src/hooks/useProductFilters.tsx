@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { ProductWithId } from '@/types/product';
+import { ProductWithId, Color } from '@/types/product';
 
 interface Filters {
   categories: string[];
@@ -10,7 +10,12 @@ interface Filters {
   heights: string[];
 }
 
-export function useProductFilters(products: ProductWithId[]) {
+interface UseProductFiltersProps {
+  products: ProductWithId[];
+  colors?: Color[];
+}
+
+export function useProductFilters({ products, colors = [] }: UseProductFiltersProps) {
   const [activeFilters, setActiveFilters] = useState<Filters>({
     categories: [],
     sizes: [],
@@ -44,9 +49,20 @@ export function useProductFilters(products: ProductWithId[]) {
       }
 
       // Фильтрация по цветам
-      if (activeFilters.colors.length > 0 && 
-          !activeFilters.colors.includes(product.color.code)) {
-        return false;
+      if (activeFilters.colors.length > 0) {
+        // Находим соответствующий цвет в списке доступных цветов по имени
+        const selectedColors = activeFilters.colors;
+        const productColorName = product.color.name.toLowerCase();
+        
+        // Проверяем, есть ли цвет продукта среди выбранных цветов
+        const isColorMatched = colors.some(availableColor => 
+          availableColor.name.toLowerCase() === productColorName && 
+          selectedColors.includes(availableColor.code)
+        );
+
+        if (!isColorMatched) {
+          return false;
+        }
       }
 
       // Фильтрация по росту
@@ -59,7 +75,7 @@ export function useProductFilters(products: ProductWithId[]) {
 
       return true;
     });
-  }, [activeFilters]);
+  }, [activeFilters, colors]);
 
   return { filterProducts, updateFilters };
 }

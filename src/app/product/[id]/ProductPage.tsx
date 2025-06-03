@@ -245,30 +245,7 @@ export default function ProductPage({ id }: ProductPageProps) {
             </div>
 
             <div className="border-t border-gray-200 pt-6 space-y-4">
-              <div>
-                <h3 className="text-sm font-medium text-gray-900">Доставка</h3>
-                <p className="mt-2 text-sm text-gray-600">
-                  Бесплатная доставка при заказе от 200 BYN
-                </p>
-              </div>
               
-              <div>
-                <h3 className="text-sm font-medium text-gray-900">Статус</h3>
-                <div className="mt-2">
-                  {(() => {
-                    const status = getStockStatus();
-                    return (
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        status.type === 'success' ? 'bg-green-100 text-green-800' :
-                        status.type === 'warning' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
-                        {status.text}
-                      </span>
-                    );
-                  })()}
-                </div>
-              </div>
 
               {showHeightInfo && product.heights && product.heights.length > 0 && (
                 <div>
@@ -285,13 +262,6 @@ export default function ProductPage({ id }: ProductPageProps) {
                   </div>
                 </div>
               )}
-
-              <div>
-                <h3 className="text-sm font-medium text-gray-900">Категория</h3>
-                <p className="mt-2 text-sm text-gray-600">
-                  {product.category}
-                </p>
-              </div>
             </div>
           </div>
         </div>

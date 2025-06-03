@@ -1,10 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongoose';
 import Cart from '@/models/Cart';
+import Product from '@/models/Product';
 import { getUserFromToken } from '@/lib/auth';
 import type { CartItem } from '@/types/cart';
 
 export const dynamic = 'force-dynamic';
+
+
+async function checkProductStock(productId: string, requestedQuantity: number): Promise<{
+  hasStock: boolean;
+  availableQuantity: number;
+}> {
+  const product = await Product.findById(productId);
+  if (!product) {
+    throw new Error('Product not found');
+  }
+  return {
+    hasStock: product.stockQuantity >= requestedQuantity,
+    availableQuantity: product.stockQuantity
+  };
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -45,6 +61,19 @@ export async function POST(req: NextRequest) {
 
     const cartItem: CartItem = await req.json();
 
+    // Проверяем наличие товара на складе
+    const { hasStock, availableQuantity } = await checkProductStock(
+      cartItem.productId,
+      cartItem.quantity
+    );
+
+    if (!hasStock) {
+      return NextResponse.json({
+        error: 'Недостаточно товара на складе',
+        availableQuantity
+      }, { status: 400 });
+    }
+
     if (!cartItem.oldPrice) {
       delete cartItem.oldPrice;
     }
@@ -61,8 +90,23 @@ export async function POST(req: NextRequest) {
         item.color.code === cartItem.color.code
     );
 
+    // Проверяем общее количество с учетом существующих товаров в корзине
     if (existingItemIndex > -1) {
-      cart.items[existingItemIndex].quantity += cartItem.quantity;
+      const newTotalQuantity = cart.items[existingItemIndex].quantity + cartItem.quantity;
+      const { hasStock, availableQuantity } = await checkProductStock(
+        cartItem.productId,
+        newTotalQuantity
+      );
+
+      if (!hasStock) {
+        return NextResponse.json({
+          error: 'Превышено доступное количество товара',
+          availableQuantity,
+          currentCartQuantity: cart.items[existingItemIndex].quantity
+        }, { status: 400 });
+      }
+
+      cart.items[existingItemIndex].quantity = newTotalQuantity;
     } else {
       cart.items.push(cartItem);
     }
@@ -91,6 +135,19 @@ export async function PUT(req: NextRequest) {
     }
 
     const { productId, size, color, quantity } = await req.json();
+
+    // Проверяем наличие товара на складе
+    const { hasStock, availableQuantity } = await checkProductStock(
+      productId,
+      quantity
+    );
+
+    if (!hasStock) {
+      return NextResponse.json({
+        error: 'Недостаточно товара на складе',
+        availableQuantity
+      }, { status: 400 });
+    }
 
     const cart = await Cart.findOne({ userId: userData.userId });
     if (!cart) {

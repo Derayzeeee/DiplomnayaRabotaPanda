@@ -189,7 +189,7 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
 });
 
   return (
-    <form onSubmit={onFormSubmit} className="space-y-6">
+    <form onSubmit={onFormSubmit} className="space-y-6" >
       {/* Основные данные */}
       <div className="space-y-4">
         <div>

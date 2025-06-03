@@ -5,35 +5,44 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import PopularProducts from '@/components/product/PopularProducts';
 
+// Определяем интерфейс для пропсов CategoryCard
+interface CategoryCardProps {
+  href: string;
+  image: string;
+  title: string;
+  description: string;
+}
+
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero секция - убираем затемнение */}
-      <section className="relative h-[100vh] overflow-hidden">
+    <div className="min-h-screen bg-neutral-50">
+      {/* Hero Section - Minimalistic Approach */}
+      <section className="relative h-[90vh] overflow-hidden">
         <div
           className="absolute inset-0 bg-fixed bg-cover bg-center"
           style={{ backgroundImage: 'url(/images/hero-bg.jpg)' }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/90"></div>
-        </div>
+        />
+        <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center text-white space-y-8 px-4">
+          <div className="text-center text-white space-y-10 px-4 max-w-4xl">
             <motion.h1
-              className="text-5xl md:text-6xl font-bold tracking-tight"
-              initial={{ opacity: 0, y: 20 }}
+              className="text-6xl md:text-7xl font-light tracking-tight"
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
+              transition={{ duration: 1, ease: 'easeOut' }}
             >
               Добро пожаловать в PandaStore
             </motion.h1>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
             >
               <Link
                 href="/catalog"
-                className="inline-block bg-white text-black px-8 py-3 text-lg font-medium border-2 border-white hover:bg-black hover:text-white transition-all duration-300 transform hover:scale-105"
+                className="inline-block bg-white/10 backdrop-blur-md text-white px-12 py-4 text-lg 
+                          border border-white/30 hover:bg-white hover:text-black transition-all 
+                          duration-500 rounded-full"
               >
                 Смотреть каталог
               </Link>
@@ -42,88 +51,63 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Акции и новинки - убираем затемнение */}
-      <section className="py-16 px-4">
-        <div className="container mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Каталог */}
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="relative group overflow-hidden border-2 border-black"
-            >
-              <Link href="/catalog">
-                <div className="aspect-[4/5] relative">
-                  <Image
-                    src="/images/catalog.jpg"
-                    alt="Каталог"
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center transform transition-transform group-hover:scale-105 bg-black/80 p-4">
-                      <h3 className="text-2xl font-bold text-white mb-3">Каталог</h3>
-                      <p className="text-white text-lg">Просмотрите нашу коллекцию одежды</p>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
+      {/* Categories Section - Modern Grid */}
+      <section className="py-24 px-6">
+        <div className="container mx-auto max-w-7xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            {/* New Arrivals Card */}
+            <CategoryCard
+              href="/new"
+              image="/images/new.jpg"
+              title="Новинки"
+              description="Ознакомьтесь с последними поступлениями"
+            />
 
-            {/* Новинки */}
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="relative group overflow-hidden border-2 border-black"
-            >
-              <Link href="/new">
-                <div className="aspect-[4/5] relative">
-                  <Image
-                    src="/images/new.jpg"
-                    alt="Новинки"
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center transform transition-transform group-hover:scale-105 bg-black/80 p-4">
-                      <h3 className="text-2xl font-bold text-white mb-3">Новинки</h3>
-                      <p className="text-white text-lg">Ознакомьтесь с последними поступлениями</p>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-
-            {/* Распродажа */}
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="relative group overflow-hidden border-2 border-black"
-            >
-              <Link href="/sale">
-                <div className="aspect-[4/5] relative">
-                  <Image
-                    src="/images/sale.jpg"
-                    alt="Распродажа"
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center transform transition-transform group-hover:scale-105 bg-black/80 p-4">
-                      <h3 className="text-2xl font-bold text-white mb-3">Распродажа</h3>
-                      <p className="text-white text-lg">Специальные предложения и скидки</p>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
+            {/* Sale Card */}
+            <CategoryCard
+              href="/sale"
+              image="/images/sale.jpg"
+              title="Распродажа"
+              description="Специальные предложения и скидки"
+            />
           </div>
         </div>
       </section>
 
-      {/* Популярные товары */}
-      <section className="py-16 px-4 bg-white">
-        <div className="container mx-auto">
+      {/* Popular Products Section */}
+      <section className="py-24 px-6 bg-white">
+        <div className="container mx-auto max-w-7xl">
           <PopularProducts />
         </div>
       </section>
     </div>
+  );
+}
+
+// Category Card Component
+function CategoryCard({ href, image, title, description }: CategoryCardProps) {
+  return (
+    <motion.div
+      whileHover={{ y: -8 }}
+      transition={{ duration: 0.3 }}
+      className="group relative overflow-hidden shadow-lg"
+    >
+      <Link href={href}>
+        <div className="aspect-[4/5] relative">
+          <Image
+            src={image}
+            alt={title}
+            fill
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent">
+            <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+              <h3 className="text-2xl font-medium mb-2">{title}</h3>
+              <p className="text-white/80 text-lg font-light">{description}</p>
+            </div>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
   );
 }

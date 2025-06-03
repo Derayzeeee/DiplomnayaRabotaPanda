@@ -29,8 +29,12 @@ export default function ProductList({
   const [products, setProducts] = useState<ProductWithId[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [loading, setLoading] = useState(true);
+  const [availableColors, setAvailableColors] = useState<Color[]>([]);
 
-  const { filterProducts, updateFilters } = useProductFilters(products);
+  const { filterProducts, updateFilters } = useProductFilters({
+    products,
+    colors: availableColors
+  });
 
   useEffect(() => {
     fetchProducts();
@@ -53,24 +57,35 @@ export default function ProductList({
       const response = await fetch('/api/products');
       const rawData = await response.json();
       
-      // Преобразуем данные в ProductWithId[]
       const productsWithStringId: ProductWithId[] = rawData.map((item: any) => ({
         ...item,
-        id: item.id || item._id, // Убедимся, что у нас есть id
+        id: item.id || item._id,
         _id: item._id.toString(),
         isFavorite: false
       }));
       
       setProducts(productsWithStringId);
 
+      // Изменяем логику группировки цветов
+      const uniqueColors: Color[] = Array.from(
+        new Map(
+          productsWithStringId
+            .filter(product => product.color && product.color.code)
+            .map(product => [
+              product.color.name.toLowerCase(), // Группируем по имени в нижнем регистре
+              {
+                name: product.color.name,
+                code: product.color.code
+              }
+            ])
+        ).values()
+      );
+
+      // Сохраняем цвета в локальное состояние
+      setAvailableColors(uniqueColors);
+
+      // Если есть внешний обработчик setColors, передаем ему цвета
       if (setColors) {
-        const uniqueColors: Color[] = Array.from(
-          new Map(
-            productsWithStringId
-              .filter(product => product.color && product.color.code)
-              .map(product => [product.color.code, product.color])
-          ).values()
-        );
         setColors(uniqueColors);
       }
     } catch (err) {
@@ -201,7 +216,7 @@ export default function ProductList({
             >
               <ProductCard 
                 product={product}
-                onFavoriteChange={(isFavorite: boolean) => { // Добавили типизацию
+                onFavoriteChange={(isFavorite: boolean) => {
                   const updatedProducts = products.map(p => 
                     p._id === product._id ? { ...p, isFavorite } : p
                   );

@@ -50,7 +50,7 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Ошибка при входе');
+        throw new Error(data.error || 'Неправильная почта либо пароль!');
       }
 
       await updateAuthStatus();

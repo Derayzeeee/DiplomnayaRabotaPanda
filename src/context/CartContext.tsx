@@ -1,125 +1,102 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
-import type { Cart, CartItem } from '@/types/cart';
+import { useAuth } from './AuthContext';
+import type { Cart, CartItem, CartContextType } from '@/types/cart';
 import type { Color } from '@/types/product';
+import { toast } from 'react-hot-toast';
 
-
-export const CartContext = createContext<{
-  cart: Cart | null;
-  isLoading: boolean;
-  error: string | null;
-  addItem: (item: CartItem) => Promise<void>;
-  removeItem: (productId: string, size: string, color: Color) => Promise<void>;
-  updateQuantity: (productId: string, size: string, color: Color, quantity: number) => Promise<void>;
-  clearCart: () => Promise<void>; // Добавляем новую функцию
-}>({
+// Создаем контекст с начальными значениями
+const CartContext = createContext<CartContextType>({
   cart: null,
-  isLoading: false,
+  isLoading: true,
   error: null,
   addItem: async () => {},
   removeItem: async () => {},
   updateQuantity: async () => {},
-  clearCart: async () => {}, // Добавляем новую функцию
+  clearCart: async () => {},
 });
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<Cart | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
   const { isAuthenticated } = useAuth();
+  const router = useRouter();
 
-  // Функция для получения корзины с сервера
-  const fetchCart = useCallback(async () => {
-    if (!isAuthenticated) {
-      setCart(null);
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      const response = await fetch('/api/cart', {
-        headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
-      });
-
-      if (response.status === 401) {
+  // Загружаем корзину при монтировании компонента
+  useEffect(() => {
+    const fetchCart = async () => {
+      if (!isAuthenticated) {
         setCart(null);
-        router.push('/login');
+        setIsLoading(false);
         return;
       }
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch cart');
+      try {
+        const response = await fetch('/api/cart');
+        if (!response.ok) {
+          throw new Error('Failed to fetch cart');
+        }
+        const data = await response.json();
+        setCart(data);
+      } catch (error) {
+        console.error('Error fetching cart:', error);
+        setError('Ошибка при загрузке корзины');
+        toast.error('Ошибка при загрузке корзины');
+      } finally {
+        setIsLoading(false);
       }
-      
-      const data = await response.json();
-      setCart(data);
-    } catch (err) {
-      console.error('Error fetching cart:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch cart');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [router, isAuthenticated]);
+    };
 
-  // Загружаем корзину при изменении статуса аутентификации
-  useEffect(() => {
-    setCart(null); // Очищаем текущую корзину перед загрузкой новой
     fetchCart();
-  }, [fetchCart, isAuthenticated]);
+  }, [isAuthenticated]);
 
-  // Функция для добавления товара в корзину
   const addItem = async (item: CartItem) => {
-  // Проверяем авторизацию перед любыми действиями с корзиной
-  if (!isAuthenticated) {
-    router.push('/login');
-    return;
-  }
-
-  try {
-    setIsLoading(true);
-    setError(null);
-
-    const response = await fetch('/api/cart', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(item),
-    });
-
-    if (response.status === 401) {
+    if (!isAuthenticated) {
       router.push('/login');
       return;
     }
 
+    try {
+      // Проверяем наличие товара на складе
+      const stockResponse = await fetch(`/api/products/${item.productId}`);
+      if (!stockResponse.ok) {
+        throw new Error('Не удалось проверить наличие товара');
+      }
+      const productData = await stockResponse.json();
+      const stockQuantity = productData.product.stockQuantity;
+
+      if (item.quantity > stockQuantity) {
+        toast.error(`Доступно только ${stockQuantity} шт.`);
+        return;
+      }
+
+      const response = await fetch('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item),
+      });
+
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to add item to cart');
+        throw new Error(errorData.error || 'Ошибка при добавлении товара');
       }
 
       const updatedCart = await response.json();
       setCart(updatedCart);
-     } catch (err) {
-    console.error('Error adding item to cart:', err);
-    setError(err instanceof Error ? err.message : 'Failed to add item to cart');
-    throw err;
-  } finally {
-    setIsLoading(false);
-  }
-};
+      toast.success('Товар добавлен в корзину');
+    } catch (error) {
+      console.error('Error adding item to cart:', error);
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error('Ошибка при добавлении товара в корзину');
+      }
+    }
+  };
 
-  // Функция для обновления количества товара
   const updateQuantity = async (
     productId: string,
     size: string,
@@ -132,7 +109,49 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      // Создаем копию текущей корзины
+      // Проверяем наличие товара на складе
+      const stockResponse = await fetch(`/api/products/${productId}`);
+      if (!stockResponse.ok) {
+        throw new Error('Не удалось проверить наличие товара');
+      }
+      const productData = await stockResponse.json();
+      const stockQuantity = productData.product.stockQuantity;
+
+      if (newQuantity > stockQuantity) {
+        // Если запрошенное количество больше доступного,
+        // устанавливаем максимально доступное количество
+        const updatedCart = {
+          ...cart,
+          items: cart.items.map(item => {
+            if (
+              item.productId === productId &&
+              item.size === size &&
+              item.color.code === color.code
+            ) {
+              return { ...item, quantity: stockQuantity };
+            }
+            return item;
+          })
+        };
+        setCart(updatedCart);
+
+        // Обновляем количество в БД
+        await fetch('/api/cart', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productId,
+            size,
+            color,
+            quantity: stockQuantity
+          }),
+        });
+
+        toast.error(`Доступно только ${stockQuantity} шт.`);
+        return;
+      }
+
+      // Оптимистичное обновление UI
       const updatedCart = {
         ...cart,
         items: cart.items.map(item => {
@@ -146,34 +165,43 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           return item;
         })
       };
-
-      // Оптимистично обновляем UI
       setCart(updatedCart);
 
+      // Отправляем запрос на сервер
       const response = await fetch('/api/cart', {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId, size, color, quantity: newQuantity }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update quantity');
+        throw new Error('Ошибка при обновлении количества');
       }
 
       const serverCart = await response.json();
       setCart(serverCart);
-    } catch (err) {
-      console.error('Error updating quantity:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update quantity');
-      // В случае ошибки перезагружаем корзину
-      fetchCart();
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+      
+      // Восстанавливаем состояние корзины
+      try {
+        const response = await fetch('/api/cart');
+        if (response.ok) {
+          const originalCart = await response.json();
+          setCart(originalCart);
+        }
+      } catch (restoreError) {
+        console.error('Error restoring cart state:', restoreError);
+      }
+
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error('Ошибка при обновлении количества');
+      }
     }
   };
 
-  // Функция для удаления товара из корзины
   const removeItem = async (productId: string, size: string, color: Color) => {
     if (!isAuthenticated || !cart) {
       router.push('/login');
@@ -181,7 +209,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      // Создаем копию текущей корзины без удаляемого товара
+      // Оптимистичное обновление UI
       const updatedCart = {
         ...cart,
         items: cart.items.filter(item => 
@@ -190,58 +218,63 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             item.color.code === color.code)
         )
       };
-
-      // Оптимистично обновляем UI
       setCart(updatedCart);
 
       const response = await fetch('/api/cart', {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId, size, color }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to remove item');
+        throw new Error('Ошибка при удалении товара');
       }
 
       const serverCart = await response.json();
       setCart(serverCart);
-    } catch (err) {
-      console.error('Error removing item:', err);
-      setError(err instanceof Error ? err.message : 'Failed to remove item');
-      // В случае ошибки перезагружаем корзину
-      fetchCart();
+      toast.success('Товар удален из корзины');
+    } catch (error) {
+      console.error('Error removing item from cart:', error);
+      
+      // Восстанавливаем состояние корзины
+      try {
+        const response = await fetch('/api/cart');
+        if (response.ok) {
+          const originalCart = await response.json();
+          setCart(originalCart);
+        }
+      } catch (restoreError) {
+        console.error('Error restoring cart state:', restoreError);
+      }
+
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error('Ошибка при удалении товара из корзины');
+      }
     }
   };
 
-  // Функция для очистки корзины
-   const clearCart = async () => {
+  const clearCart = async () => {
+    if (!isAuthenticated || !cart) {
+      return;
+    }
+
     try {
-      setIsLoading(true);
-      setError(null);
-
-      const response = await fetch('/api/cart/clear', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
+      const response = await fetch('/api/cart', { method: 'DELETE' });
       if (!response.ok) {
-        throw new Error('Failed to clear cart');
+        throw new Error('Ошибка при очистке корзины');
       }
 
-      // Очищаем состояние корзины
       setCart(null);
-    } catch (err) {
-      console.error('Error clearing cart:', err);
-      setError(err instanceof Error ? err.message : 'Failed to clear cart');
-      throw err;
-    } finally {
-      setIsLoading(false);
+      toast.success('Корзина очищена');
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error('Ошибка при очистке корзины');
+      }
     }
   };
 
@@ -254,7 +287,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         addItem,
         removeItem,
         updateQuantity,
-        clearCart, // Добавляем функцию в провайдер
+        clearCart,
       }}
     >
       {children}
@@ -262,11 +295,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Хук для использования контекста корзины
-export function useCart() {
+export const useCart = () => {
   const context = useContext(CartContext);
   if (context === undefined) {
     throw new Error('useCart must be used within a CartProvider');
   }
   return context;
-}
+};

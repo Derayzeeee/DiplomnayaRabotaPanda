@@ -280,7 +280,12 @@ export default function Filters({
           Цвета
         </h3>
         <div className="flex flex-wrap gap-2">
-          {colors.map((color) => (
+          {Array.from(
+            new Map(
+              colors
+                .map(color => [color.name.toLowerCase(), color])
+            ).values()
+          ).map((color) => (
             <button
               key={color.code}
               onClick={() => handleFilterChange('colors', color.code)}

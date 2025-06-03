@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
+import { validatePhoneNumber, validatePostalCode, validateFullName } from '@/utils/validation';
+import InputMask from 'react-input-mask';
 
 interface ShippingAddress {
   fullName: string;
