@@ -18,15 +18,33 @@ interface SaleProductsListProps {
   availableColors: Color[];
 }
 
+// Интерфейс для сырых данных
+interface RawProduct {
+  _id: {
+    toString(): string;
+  };
+  name: string;
+  price: number;
+  oldPrice?: number;
+  description: string;
+  images: string[];
+  category: string;
+  createdAt: string;
+  updatedAt: string;
+  isSale: boolean;
+  color: Color;
+  sizes: string[];
+  heights: string[];
+}
+
 export default function SaleProductsList({ initialFilters, availableColors }: SaleProductsListProps) {
   const [products, setProducts] = useState<ProductWithId[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [loading, setLoading] = useState(true);
 
-  // Передаем availableColors из пропсов в хук useProductFilters
   const { filterProducts, updateFilters } = useProductFilters({ 
     products, 
-    colors: availableColors // Теперь availableColors доступна, так как она приходит из пропсов
+    colors: availableColors
   });
 
   useEffect(() => {
@@ -43,7 +61,7 @@ export default function SaleProductsList({ initialFilters, availableColors }: Sa
     try {
       const response = await fetch('/api/products/sale');
       const data = await response.json();
-      const productsWithStringId = data.map((product: any) => ({
+      const productsWithStringId = data.map((product: RawProduct) => ({
         ...product,
         _id: product._id.toString()
       }));

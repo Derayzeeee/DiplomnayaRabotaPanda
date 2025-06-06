@@ -6,11 +6,9 @@ import ProductList from './ProductList';
 import { Product, Color } from '@/types/product';
 
 export default function CatalogContent() {
-  const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [sizes, setSizes] = useState<string[]>([]);
   const [colors, setColors] = useState<Color[]>([]);
-  const [filteredCount, setFilteredCount] = useState<number>(0);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -18,7 +16,7 @@ export default function CatalogContent() {
         const response = await fetch('/api/products');
         const data = await response.json() as Product[];
         
-        setProducts(data);
+
 
         const uniqueCategories = Array.from(
           new Set(data.map((product: Product) => product.category))
@@ -83,7 +81,7 @@ export default function CatalogContent() {
 
             <ProductList 
               initialFilters={filters}
-              onFilteredCountChange={setFilteredCount}
+
             />
           </div>
         </div>

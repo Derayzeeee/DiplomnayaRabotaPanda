@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useProductFilters } from '@/hooks/useProductFilters';
-import { Product, Color, ProductWithId } from '@/types/product';
+import { Color, ProductWithId } from '@/types/product';
 import ProductCard from '@/components/product/ProductCard';
 
 type SortOption = 'newest' | 'priceAsc' | 'priceDesc';
@@ -21,6 +21,30 @@ interface ProductListProps {
   setColors?: (colors: Array<Color>) => void;
 }
 
+interface RawProduct {
+  id?: string;
+  _id: {
+    toString(): string;
+  };
+  name: string;
+  price: number;
+  oldPrice?: number;
+  salePrice?: string; // Изменено на string
+  description: string;
+  images: string[];
+  category: string;
+  color: Color;
+  sizes: string[];
+  heights: string[];
+  isNewProduct: boolean;
+  isSale: boolean;
+  inStock: boolean;
+  stockQuantity: number;
+  lowStockThreshold: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function ProductList({ 
   initialFilters,
   onFilteredCountChange,
@@ -36,9 +60,60 @@ export default function ProductList({
     colors: availableColors
   });
 
+  const fetchProducts = useCallback(async () => {
+    try {
+      const response = await fetch('/api/products');
+      const rawData: RawProduct[] = await response.json();
+      
+      const productsWithStringId: ProductWithId[] = rawData.map((item) => ({
+        ...item,
+        id: item.id || item._id.toString(),
+        _id: item._id.toString(),
+        isFavorite: false,
+        sizes: item.sizes || [],
+        heights: item.heights || [],
+        isNewProduct: item.isNewProduct || false,
+        isSale: item.isSale || false,
+        inStock: item.inStock || false,
+        stockQuantity: item.stockQuantity || 0,
+        lowStockThreshold: item.lowStockThreshold || 5,
+        oldPrice: item.oldPrice || undefined,
+        // Преобразуем salePrice в строку
+        salePrice: item.isSale 
+          ? (item.salePrice || (item.price * 0.8).toString())
+          : '0' // или другое значение по умолчанию в виде строки
+      }));
+      
+      setProducts(productsWithStringId);
+
+      const uniqueColors: Color[] = Array.from(
+        new Map(
+          productsWithStringId
+            .filter(product => product.color && product.color.code)
+            .map(product => [
+              product.color.name.toLowerCase(),
+              {
+                name: product.color.name,
+                code: product.color.code
+              }
+            ])
+        ).values()
+      );
+
+      setAvailableColors(uniqueColors);
+      if (setColors) {
+        setColors(uniqueColors);
+      }
+    } catch (err) {
+      console.error('Failed to fetch products:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [setColors]);
+
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [fetchProducts]);
 
   useEffect(() => {
     if (initialFilters) {
@@ -51,49 +126,6 @@ export default function ProductList({
       updateFilters(completeFilters);
     }
   }, [initialFilters, updateFilters]);
-
-  async function fetchProducts() {
-    try {
-      const response = await fetch('/api/products');
-      const rawData = await response.json();
-      
-      const productsWithStringId: ProductWithId[] = rawData.map((item: any) => ({
-        ...item,
-        id: item.id || item._id,
-        _id: item._id.toString(),
-        isFavorite: false
-      }));
-      
-      setProducts(productsWithStringId);
-
-      // Изменяем логику группировки цветов
-      const uniqueColors: Color[] = Array.from(
-        new Map(
-          productsWithStringId
-            .filter(product => product.color && product.color.code)
-            .map(product => [
-              product.color.name.toLowerCase(), // Группируем по имени в нижнем регистре
-              {
-                name: product.color.name,
-                code: product.color.code
-              }
-            ])
-        ).values()
-      );
-
-      // Сохраняем цвета в локальное состояние
-      setAvailableColors(uniqueColors);
-
-      // Если есть внешний обработчик setColors, передаем ему цвета
-      if (setColors) {
-        setColors(uniqueColors);
-      }
-    } catch (err) {
-      console.error('Failed to fetch products:', err);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   const sortProducts = (products: ProductWithId[]) => {
     switch (sortBy) {
@@ -115,6 +147,20 @@ export default function ProductList({
   useEffect(() => {
     onFilteredCountChange?.(filteredProducts.length);
   }, [filteredProducts.length, onFilteredCountChange]);
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
+        {[...Array(8)].map((_, i) => (
+          <div key={i} className="animate-pulse">
+            <div className="aspect-[3/4] bg-gray-200 rounded-xl mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   if (loading) {
     return (

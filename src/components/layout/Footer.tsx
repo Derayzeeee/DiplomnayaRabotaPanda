@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import SizeChart from '../common/SizeChart';
 import SocialLinksDialog from '../common/SocialLinksDialog';
 

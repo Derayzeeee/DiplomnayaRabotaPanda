@@ -2,7 +2,7 @@
 
 import { useCart } from '@/context/CartContext';
 import type { Color } from '@/types/product';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 
 interface QuantitySelectorProps {
@@ -23,7 +23,28 @@ export default function QuantitySelector({
   const [isLoading, setIsLoading] = useState(false);
   const [stockQuantity, setStockQuantity] = useState<number | null>(null);
 
-  // Получаем актуальное количество товара при монтировании компонента
+  const handleQuantityChange = useCallback(async (newQuantity: number) => {
+    if (isLoading || stockQuantity === null) return;
+
+    if (newQuantity < 1) {
+      toast.error('Количество не может быть меньше 1');
+      return;
+    }
+
+    if (newQuantity > stockQuantity) {
+      toast.error(`Доступно только ${stockQuantity} шт.`);
+      newQuantity = stockQuantity;
+    }
+
+    setIsLoading(true);
+    try {
+      await updateQuantity(productId, size, color, newQuantity);
+      setQuantity(newQuantity);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isLoading, stockQuantity, updateQuantity, productId, size, color]);
+
   useEffect(() => {
     const checkStock = async () => {
       try {
@@ -34,7 +55,6 @@ export default function QuantitySelector({
         const data = await response.json();
         setStockQuantity(data.product.stockQuantity);
 
-        // Если текущее количество больше доступного, корректируем его
         if (initialQuantity > data.product.stockQuantity) {
           handleQuantityChange(data.product.stockQuantity);
         }
@@ -45,37 +65,11 @@ export default function QuantitySelector({
     };
 
     checkStock();
-  }, [productId, initialQuantity]);
+  }, [productId, initialQuantity, handleQuantityChange]);
 
-  // Обновляем локальное состояние при изменении пропсов
   useEffect(() => {
     setQuantity(initialQuantity);
   }, [initialQuantity]);
-
-  const handleQuantityChange = async (newQuantity: number) => {
-    if (isLoading || stockQuantity === null) return;
-
-    if (newQuantity < 1) {
-      toast.error('Количество не может быть меньше 1');
-      return;
-    }
-
-    if (newQuantity > stockQuantity) {
-      toast.error(`Доступно только ${stockQuantity} шт.`);
-      // Устанавливаем максимально доступное количество
-      newQuantity = stockQuantity;
-    }
-
-    setIsLoading(true);
-    try {
-      await updateQuantity(productId, size, color, newQuantity);
-      setQuantity(newQuantity);
-    } catch (error) {
-      // Ошибка уже обработана в CartContext
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   if (stockQuantity === null) {
     return (
@@ -87,7 +81,6 @@ export default function QuantitySelector({
 
   return (
     <div className="relative">
-      {/* Контейнер с фиксированной высотой для кнопок */}
       <div className="h-[38px] flex items-center border rounded-md">
         <button
           onClick={() => handleQuantityChange(quantity - 1)}

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { ProductWithId } from '@/types/product';
+import Image from 'next/image';
 import ConfirmationModal from '@/components/ui/ConfirmationModal';
 import AdminSearchBar from '@/components/admin/SearchBar';
 
@@ -162,11 +163,16 @@ export default function AdminPanel() {
               {products.map((product) => (
                 <tr key={product._id}>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <img
-                      src={product.images[0]}
-                      alt={product.name}
-                      className="h-16 w-16 object-cover rounded-md"
-                    />
+                    <div className="relative h-16 w-16">
+                      <Image
+                        src={product.images[0]}
+                        alt={product.name}
+                        fill
+                        sizes="64px"
+                        className="object-cover rounded-md"
+                        priority={false}
+                      />
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">

@@ -1,4 +1,3 @@
-import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -164,7 +163,8 @@ export function isTokenExpired(token: string): boolean {
     const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
     const currentTime = Math.floor(Date.now() / 1000);
     return (decoded.exp || 0) < currentTime;
-  } catch (error) {
+  } 
+  finally {
     return true;
   }
 }

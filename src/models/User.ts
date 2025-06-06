@@ -11,6 +11,11 @@ export interface IUser extends Document {
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
+// Определяем тип ошибки для обработки ошибок хеширования
+interface HashingError extends Error {
+  code?: string;
+}
+
 const userSchema = new mongoose.Schema<IUser>({
   email: {
     type: String,
@@ -47,8 +52,9 @@ userSchema.pre('save', async function(next) {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();
-  } catch (error: any) {
-    next(error);
+  } catch (error: unknown) {
+    const hashError = error as HashingError;
+    next(hashError);
   }
 });
 
@@ -56,7 +62,7 @@ userSchema.pre('save', async function(next) {
 userSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
   try {
     return await bcrypt.compare(candidatePassword, this.password);
-  } catch (error) {
+  } catch {
     throw new Error('Error comparing passwords');
   }
 };

@@ -167,10 +167,10 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
     images,
     color,
     sizes: Object.entries(selectedSizes)
-      .filter(([_, isSelected]) => isSelected)
+      .filter(([isSelected]) => isSelected)
       .map(([size]) => size),
     heights: Object.entries(selectedHeights)
-      .filter(([_, isSelected]) => isSelected)
+      .filter(([isSelected]) => isSelected)
       .map(([height]) => height),
     stockQuantity: Number(data.stockQuantity) || 0,
     lowStockThreshold: Number(data.lowStockThreshold) || 5
@@ -180,7 +180,7 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
 
   // Если это новый товар, удаляем _id
   if (!initialData) {
-    const { _id, id, ...submitData } = finalData;
+    const {...submitData } = finalData;
     onSubmit(submitData as ProductWithId);
   } else {
     // Если это редактирование существующего товара

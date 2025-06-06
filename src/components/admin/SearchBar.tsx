@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import debounce from 'lodash/debounce';
 
 interface AdminSearchBarProps {
   isLoading?: boolean;
@@ -17,20 +16,21 @@ export default function AdminSearchBar({ isLoading = false }: AdminSearchBarProp
     searchParams?.get('query') ?? ''
   );
 
-  const debouncedSearch = useCallback(
-    debounce((query: string) => {
-      const params = new URLSearchParams(searchParams?.toString() ?? '');
-      
-      if (query) {
-        params.set('query', query);
-      } else {
-        params.delete('query');
-      }
+  const debouncedSearch = useCallback((query: string) => {
+  const handler = setTimeout(() => {
+    const params = new URLSearchParams(searchParams?.toString() ?? '');
+    
+    if (query) {
+      params.set('query', query);
+    } else {
+      params.delete('query');
+    }
 
-      router.push(`${pathname}?${params.toString()}`);
-    }, 500),
-    [pathname, searchParams]
-  );
+    router.push(`${pathname}?${params.toString()}`);
+  }, 500);
+
+  return () => clearTimeout(handler);
+}, [pathname, searchParams, router]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;

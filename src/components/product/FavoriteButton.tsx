@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { HeartIcon } from '@heroicons/react/24/outline';
-import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 
 interface FavoriteButtonProps {
   productId: string;
@@ -16,7 +14,6 @@ export default function FavoriteButton({
   productId, 
   initialIsFavorite = false,
   onFavoriteChange,
-  className = ''
 }: FavoriteButtonProps) {
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
   const [isLoading, setIsLoading] = useState(false);

@@ -18,6 +18,23 @@ interface NewProductsListProps {
   availableColors: Color[];
 }
 
+// Интерфейс для сырых данных
+interface RawProduct {
+  _id: {
+    toString(): string;
+  };
+  name: string;
+  price: number;
+  description: string;
+  images: string[];
+  category: string;
+  createdAt: string;
+  updatedAt: string;
+  color: Color;
+  sizes: string[];
+  heights: string[];
+}
+
 export default function NewProductsList({ initialFilters, availableColors }: NewProductsListProps) {
   const [products, setProducts] = useState<ProductWithId[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
@@ -42,7 +59,7 @@ export default function NewProductsList({ initialFilters, availableColors }: New
     try {
       const response = await fetch('/api/products/new');
       const data = await response.json();
-      const productsWithStringId = data.map((product: any) => ({
+      const productsWithStringId = data.map((product: RawProduct) => ({
         ...product,
         _id: product._id.toString()
       }));

@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
-import { validatePhoneNumber, validatePostalCode, validateFullName } from '@/utils/validation';
-import InputMask from 'react-input-mask';
 
 interface ShippingAddress {
   fullName: string;
@@ -190,7 +188,7 @@ export default function CheckoutPage() {
                       name="delivery"
                       value="pickup"
                       checked={deliveryMethod === 'pickup'}
-                      onChange={(e) => handleDeliveryChange('pickup')}
+                      onChange={() => handleDeliveryChange('pickup')}
                       className="h-4 w-4 text-black border-gray-300 focus:ring-black"
                     />
                     <span className="text-sm text-gray-900">Самовывоз (бесплатно)</span>
@@ -201,7 +199,7 @@ export default function CheckoutPage() {
                       name="delivery"
                       value="courier"
                       checked={deliveryMethod === 'courier'}
-                      onChange={(e) => handleDeliveryChange('courier')}
+                      onChange={() => handleDeliveryChange('courier')}
                       className="h-4 w-4 text-black border-gray-300 focus:ring-black"
                     />
                     <span className="text-sm text-gray-900">
@@ -217,7 +215,7 @@ export default function CheckoutPage() {
                       name="delivery"
                       value="post"
                       checked={deliveryMethod === 'post'}
-                      onChange={(e) => handleDeliveryChange('post')}
+                      onChange={() => handleDeliveryChange('post')}
                       className="h-4 w-4 text-black border-gray-300 focus:ring-black"
                     />
                     <span className="text-sm text-gray-900">Почтой Беларуси (по тарифам почты)</span>

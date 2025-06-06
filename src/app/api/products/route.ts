@@ -1,8 +1,29 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongoose';
 import Product from '@/models/Product';
-import { checkAdminAccess, getUserFromToken } from '@/lib/auth';
+import { checkAdminAccess } from '@/lib/auth';
 import { NextRequest } from 'next/server';
+
+// Определяем интерфейс для фильтра продуктов
+interface ProductFilter {
+  category?: string;
+  price?: {
+    $gte?: number;
+    $lte?: number;
+  };
+  'color.code'?: {
+    $in: string[];
+  };
+  sizes?: {
+    $in: string[];
+  };
+  $or?: Array<{
+    [key: string]: {
+      $regex: string;
+      $options: string;
+    };
+  }>;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,12 +33,12 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
     const minPrice = searchParams.get('minPrice');
     const maxPrice = searchParams.get('maxPrice');
-    const colors = searchParams.get('colors')?.split(',').filter(Boolean); // Фильтруем пустые значения
+    const colors = searchParams.get('colors')?.split(',').filter(Boolean);
     const sizes = searchParams.get('sizes')?.split(',').filter(Boolean);
     const isAdminRequest = searchParams.get('isAdmin') === 'true';
     const searchQuery = searchParams.get('query');
     
-    let query: any = {};
+    const query: ProductFilter = {};
     
     if (isAdminRequest) {
       const adminCheck = await checkAdminAccess(request);
@@ -31,7 +52,6 @@ export async function GET(request: NextRequest) {
         { category: { $regex: searchQuery, $options: 'i' } }
       ];
 
-      const user = await getUserFromToken(request);
       console.log(`[2025-06-03 07:31:59] Search query by Derayzeeee: "${searchQuery}"`);
     }
     
@@ -45,9 +65,7 @@ export async function GET(request: NextRequest) {
       if (maxPrice) query.price.$lte = parseInt(maxPrice);
     }
     
-    // Исправляем фильтрацию по цвету
     if (colors?.length) {
-      // Используем код цвета для фильтрации
       query['color.code'] = { $in: colors };
       console.log(`[2025-06-03 07:31:59] Filtering by colors:`, colors);
     }
@@ -56,13 +74,11 @@ export async function GET(request: NextRequest) {
       query.sizes = { $in: sizes };
     }
 
-    // Добавляем логирование запроса для отладки
     console.log(`[2025-06-03 07:31:59] Query:`, JSON.stringify(query, null, 2));
 
     const totalCount = await Product.countDocuments(query);
     const products = await Product.find(query).sort({ createdAt: -1 });
     
-    // Логируем результаты
     console.log(`[2025-06-03 07:31:59] Found ${products.length} products`);
 
     if (searchQuery) {
@@ -94,7 +110,7 @@ export async function POST(request: NextRequest) {
     await dbConnect();
     
     const body = await request.json();
-    const { _id, ...productData } = body;
+    const {...productData } = body;
     
     // Добавляем автоматическое вычисление inStock
     const stockQuantity = Number(productData.stockQuantity);

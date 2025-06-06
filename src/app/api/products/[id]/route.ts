@@ -141,7 +141,7 @@ export async function PUT(
     }
 
     // Убираем _id из данных обновления, если он есть
-    const { _id, ...updateData } = data;
+    const {...updateData } = data;
 
     // Обновляем продукт
     const updatedProduct = await Product.findByIdAndUpdate(

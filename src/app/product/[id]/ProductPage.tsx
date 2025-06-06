@@ -9,7 +9,6 @@ import FavoriteButton from '@/components/product/FavoriteButton';
 import SizeChart from '@/components/common/SizeChart';
 import Toast from '@/components/ui/Toast';
 import Loading from './loading';
-import Footer from '@/components/layout/Footer';
 import RelatedProducts from './RelatedProducts';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
@@ -59,19 +58,6 @@ export default function ProductPage({ id }: ProductPageProps) {
     setShowToast(true);
   };
 
-  const getStockStatus = () => {
-    if (!product) return { text: 'Нет в наличии', type: 'error' };
-
-    if (product.stockQuantity === 0) {
-      return { text: 'Нет в наличии', type: 'error' };
-    }
-
-    if (product.stockQuantity <= product.lowStockThreshold) {
-      return { text: 'Заканчивается', type: 'warning' };
-    }
-
-    return { text: 'В наличии', type: 'success' };
-  };
 
   const handleAddToCart = async () => {
     if (!isAuthenticated) {

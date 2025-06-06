@@ -9,11 +9,6 @@ import {
   CATEGORIES_WITH_HEIGHT 
 } from '@/constants/filters';
 
-interface Color {
-  name: string;
-  code: string;
-}
-
 interface FiltersProps {
   categories: string[];
   sizes: string[];
@@ -36,8 +31,6 @@ interface FiltersProps {
 }
 
 export default function Filters({
-  categories,
-  sizes,
   colors,
   onFilterChange,
   initialFilters,

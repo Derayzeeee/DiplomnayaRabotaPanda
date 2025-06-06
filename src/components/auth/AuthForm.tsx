@@ -10,6 +10,11 @@ interface AuthFormProps {
   mode: AuthMode;
 }
 
+interface ApiError extends Error {
+  message: string;
+  code?: string;
+}
+
 export default function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -43,8 +48,9 @@ export default function AuthForm({ mode }: AuthFormProps) {
       // Успешная авторизация/регистрация
       router.push('/');
       router.refresh();
-    } catch (err: any) {
-      setError(err.message);
+    }catch (err) {
+      const error = err as ApiError;
+      setError(error.message);
     } finally {
       setLoading(false);
     }

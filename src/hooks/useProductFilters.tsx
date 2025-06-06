@@ -15,7 +15,7 @@ interface UseProductFiltersProps {
   colors?: Color[];
 }
 
-export function useProductFilters({ products, colors = [] }: UseProductFiltersProps) {
+export function useProductFilters({colors = [] }: UseProductFiltersProps) {
   const [activeFilters, setActiveFilters] = useState<Filters>({
     categories: [],
     sizes: [],

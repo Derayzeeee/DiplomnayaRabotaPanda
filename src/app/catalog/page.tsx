@@ -1,24 +1,12 @@
 import { Suspense } from 'react';
 import dbConnect from '@/lib/db/mongoose';
-import Product from '@/models/Product';
-import Category from '@/models/Category';
 import CatalogContent from './CatalogContent';
 import Loading from './loading';
-import Footer from '@/components/layout/Footer';
 
 export default async function CatalogPage() {
   await dbConnect();
   
-  const categories = await Category.find({}).lean();
-  const uniqueSizes = await Product.distinct('sizes');
-  const uniqueColorObjects = await Product.distinct('colors');
 
-  // Убираем дубликаты цветов по коду цвета
-  const uniqueColors = Array.from(new Map(
-    uniqueColorObjects
-      .filter(color => typeof color === 'object' && color !== null)
-      .map(color => [color.code, { name: color.name, code: color.code }])
-  ).values());
 
   return (
     <div className="bg-white min-h-screen flex flex-col">

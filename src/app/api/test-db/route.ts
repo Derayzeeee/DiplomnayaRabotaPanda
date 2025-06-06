@@ -3,7 +3,7 @@ import dbConnect from '@/lib/db/mongoose';
 
 export async function GET() {
   try {
-    const mongoose = await dbConnect();
+    await dbConnect();
     return NextResponse.json({ status: 'Connected to MongoDB' });
   } catch (error) {
     console.error('Database connection error:', error);

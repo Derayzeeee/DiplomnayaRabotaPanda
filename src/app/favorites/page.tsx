@@ -5,7 +5,6 @@ import { motion } from 'framer-motion';
 import ProductCard from '@/components/product/ProductCard';
 import type { ProductWithId } from '@/types/product';
 import Loading from './loading';
-import Footer from '@/components/layout/Footer';
 
 export default function FavoritesPage() {
   const [favorites, setFavorites] = useState<ProductWithId[]>([]);
