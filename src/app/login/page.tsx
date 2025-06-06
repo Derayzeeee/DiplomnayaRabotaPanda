@@ -1,11 +1,13 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 
-export default function LoginPage() {
+// Основной компонент формы входа
+function LoginContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -21,7 +23,6 @@ export default function LoginPage() {
     }
   }, [searchParams]);
 
-  // Проверка возможности отправки формы
   const isSubmitDisabled = () => {
     return isLoading || !email.trim() || !password.trim();
   };
@@ -29,7 +30,6 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Дополнительная проверка перед отправкой
     if (isSubmitDisabled()) {
       return;
     }
@@ -135,7 +135,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
-                  setError(''); // Очищаем ошибку при вводе
+                  setError('');
                 }}
                 disabled={isLoading}
               />
@@ -157,7 +157,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
-                  setError(''); // Очищаем ошибку при вводе
+                  setError('');
                 }}
                 disabled={isLoading}
               />
@@ -199,5 +199,26 @@ export default function LoginPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+/**
+ * Login Page Component
+ * Created by Derayzeeee on 2025-06-06 19:13:35
+ */
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Загрузка...</p>
+          </div>
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 }

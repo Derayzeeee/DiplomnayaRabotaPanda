@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { ProductWithId } from '@/types/product';
@@ -29,7 +30,8 @@ const StatusBadge = ({
   );
 };
 
-export default function AdminPanel() {
+// Основной контент админ-панели
+function AdminPanelContent() {
   const [products, setProducts] = useState<ProductWithId[]>([]);
   const [productToDelete, setProductToDelete] = useState<ProductWithId | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -237,5 +239,24 @@ export default function AdminPanel() {
         cancelButtonText="Отмена"
       />
     </div>
+  );
+}
+
+/**
+ * Admin Panel Page Component
+ * Created by Derayzeeee on 2025-06-06 19:11:03
+ */
+export default function AdminPanel() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Загрузка...</p>
+        </div>
+      </div>
+    }>
+      <AdminPanelContent />
+    </Suspense>
   );
 }
