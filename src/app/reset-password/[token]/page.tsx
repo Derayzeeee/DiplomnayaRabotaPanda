@@ -4,25 +4,60 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-export default function ResetPassword({ params }: { params: { token: string } }) {
+type Status = 'idle' | 'loading' | 'success' | 'error';
+
+interface ResetPasswordProps {
+  params: {
+    token: string;
+  };
+}
+
+interface ApiResponse {
+  error?: string;
+  message?: string;
+}
+
+/**
+ * Reset Password Page Component
+ * Created by Derayzeeee on 2025-06-06 18:10:44
+ * 
+ * This component handles the password reset functionality,
+ * allowing users to set a new password using a reset token.
+ */
+export default function ResetPassword({ params }: ResetPasswordProps) {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState('');
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Проверяем совпадение паролей
+  const validatePassword = (): string | null => {
     if (newPassword !== confirmPassword) {
-      setError('Пароли не совпадают');
-      return;
+      return 'Пароли не совпадают';
     }
 
-    // Проверяем сложность пароля
     if (newPassword.length < 8) {
-      setError('Пароль должен содержать минимум 8 символов');
+      return 'Пароль должен содержать минимум 8 символов';
+    }
+
+    const hasUpperCase = /[A-Z]/.test(newPassword);
+    const hasLowerCase = /[a-z]/.test(newPassword);
+    const hasNumbers = /\d/.test(newPassword);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword);
+
+    if (!(hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChar)) {
+      return 'Пароль должен содержать заглавные и строчные буквы, цифры и специальные символы';
+    }
+
+    return null;
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    const validationError = validatePassword();
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
@@ -41,23 +76,28 @@ export default function ResetPassword({ params }: { params: { token: string } })
         }),
       });
 
-      const data = await response.json();
+      const data: ApiResponse = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Что-то пошло не так');
+        throw new Error(data.error || 'Произошла ошибка при сбросе пароля');
       }
 
       setStatus('success');
       
-      // Перенаправляем на страницу входа через 2 секунды
-      setTimeout(() => {
+      // Redirect to login page after 2 seconds
+      const redirectTimeout = setTimeout(() => {
         router.push('/login');
       }, 2000);
+
+      // Cleanup timeout on component unmount
+      return () => clearTimeout(redirectTimeout);
     } catch (error) {
       setStatus('error');
-      setError(error instanceof Error ? error.message : 'Произошла ошибка');
+      setError(error instanceof Error ? error.message : 'Произошла неизвестная ошибка');
     }
   };
+
+  const isFormDisabled = status === 'loading' || status === 'success';
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -68,7 +108,7 @@ export default function ResetPassword({ params }: { params: { token: string } })
           </h2>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit} noValidate>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <label htmlFor="new-password" className="sr-only">
@@ -83,8 +123,9 @@ export default function ResetPassword({ params }: { params: { token: string } })
                 placeholder="Новый пароль"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                disabled={status === 'loading' || status === 'success'}
+                disabled={isFormDisabled}
                 minLength={8}
+                aria-invalid={error ? 'true' : 'false'}
               />
             </div>
             <div>
@@ -100,18 +141,29 @@ export default function ResetPassword({ params }: { params: { token: string } })
                 placeholder="Подтвердите пароль"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={status === 'loading' || status === 'success'}
+                disabled={isFormDisabled}
                 minLength={8}
+                aria-invalid={error ? 'true' : 'false'}
               />
             </div>
           </div>
 
-          {status === 'error' && (
-            <div className="text-red-600 text-sm text-center">{error}</div>
+          {error && (
+            <div 
+              className="text-red-600 text-sm text-center" 
+              role="alert"
+              aria-live="polite"
+            >
+              {error}
+            </div>
           )}
 
           {status === 'success' && (
-            <div className="text-green-600 text-sm text-center">
+            <div 
+              className="text-green-600 text-sm text-center"
+              role="alert"
+              aria-live="polite"
+            >
               Пароль успешно изменен! Сейчас вы будете перенаправлены на страницу входа...
             </div>
           )}
@@ -119,8 +171,9 @@ export default function ResetPassword({ params }: { params: { token: string } })
           <div>
             <button
               type="submit"
-              disabled={status === 'loading' || status === 'success'}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:bg-gray-400"
+              disabled={isFormDisabled}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-200"
+              aria-busy={status === 'loading'}
             >
               {status === 'loading' ? 'Сохранение...' : 'Сохранить новый пароль'}
             </button>
