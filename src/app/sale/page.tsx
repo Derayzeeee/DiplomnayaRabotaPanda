@@ -1,26 +1,11 @@
 import { Suspense } from 'react';
-import dbConnect from '@/lib/db/mongoose';
-import Product from '@/models/Product';
-import Category from '@/models/Category';
 import Loading from './loading';
 import ClientFilterWrapper from './ClientFilterWrapper';
 
-export default async function SalePage() {
-  await dbConnect();
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
-  const categories = await Category.find({}).lean();
-  const uniqueSizes = await Product.distinct('sizes', { isSale: true });
-  
-  // Получаем уникальные цвета из продуктов
-  const products = await Product.find({ isSale: true }).lean();
-  const uniqueColors = Array.from(
-    new Set(
-      products.map(product => 
-        JSON.stringify({ name: product.color.name, code: product.color.code })
-      )
-    )
-  ).map(colorStr => JSON.parse(colorStr));
-
+export default function SalePage() {
   return (
     <div className="bg-white min-h-screen flex flex-col">
       <div className="flex-grow">
@@ -34,11 +19,7 @@ export default async function SalePage() {
             </div>
 
             <Suspense fallback={<Loading />}>
-              <ClientFilterWrapper
-                categories={categories.map(cat => cat.name)}
-                sizes={uniqueSizes}
-                colors={uniqueColors}
-              />
+              <ClientFilterWrapper />
             </Suspense>
           </div>
         </div>
