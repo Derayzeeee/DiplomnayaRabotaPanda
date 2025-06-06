@@ -9,6 +9,17 @@ interface Color {
   code: string;
 }
 
+interface Product {
+  _id: string;
+  category: string;
+  sizes: string[];
+  color: Color;
+  isSale: boolean;
+  price: number;
+  oldPrice?: number;
+  name: string;
+}
+
 export default function ClientFilterWrapper() {
   const [filters, setFilters] = useState({
     categories: [] as string[],
@@ -29,23 +40,22 @@ export default function ClientFilterWrapper() {
         setIsLoading(true);
         setError(null);
 
-        // Получаем товары со скидкой
         const response = await fetch('/api/products?isSale=true');
         if (!response.ok) {
           throw new Error('Failed to fetch sale products');
         }
         
-        const products = await response.json();
+        const products = await response.json() as Product[];
 
         // Извлекаем уникальные категории
         const uniqueCategories = Array.from(
-          new Set(products.map((product: any) => product.category))
+          new Set(products.map((product: Product) => product.category))
         ).filter(Boolean) as string[];
         setCategories(uniqueCategories);
 
         // Извлекаем уникальные размеры
         const uniqueSizes = Array.from(
-          new Set(products.flatMap((product: any) => product.sizes))
+          new Set(products.flatMap((product: Product) => product.sizes))
         ).filter(Boolean) as string[];
         setSizes(uniqueSizes);
 
@@ -53,8 +63,8 @@ export default function ClientFilterWrapper() {
         const uniqueColors = Array.from(
           new Map(
             products
-              .filter((product: any) => product.color && product.color.code)
-              .map((product: any) => [
+              .filter((product: Product) => product.color && product.color.code)
+              .map((product: Product) => [
                 product.color.code,
                 {
                   name: product.color.name,
@@ -88,7 +98,6 @@ export default function ClientFilterWrapper() {
     );
   }
 
-  // Форматируем цвета так же, как в вашем коде
   const formattedColors = colors.map(color => ({
     name: color.name,
     code: color.code
