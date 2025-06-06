@@ -4,51 +4,22 @@ import Product from '@/models/Product';
 import Category from '@/models/Category';
 import Loading from './loading';
 import ClientFilterWrapper from './ClientFilterWrapper';
-import { cache } from 'react';
-
-// Добавляем конфигурацию для динамического рендеринга
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
-// Кэшируем получение данных в рамках одного запроса
-const getData = cache(async () => {
-  try {
-    await dbConnect();
-
-    // Получаем все данные параллельно
-    const [categories, uniqueSizes, products] = await Promise.all([
-      Category.find({}).lean(),
-      Product.distinct('sizes', { isSale: true }),
-      Product.find({ isSale: true }).lean()
-    ]);
-
-    // Получаем уникальные цвета из продуктов
-    const uniqueColors = Array.from(
-      new Set(
-        products.map(product => 
-          JSON.stringify({ name: product.color.name, code: product.color.code })
-        )
-      )
-    ).map(colorStr => JSON.parse(colorStr));
-
-    return {
-      categories: categories.map(cat => cat.name),
-      sizes: uniqueSizes,
-      colors: uniqueColors
-    };
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    // Возвращаем пустые массивы в случае ошибки
-    return {
-      categories: [],
-      sizes: [],
-      colors: []
-    };
-  }
-});
 
 export default async function SalePage() {
-  const { categories, sizes, colors } = await getData();
+  await dbConnect();
+
+  const categories = await Category.find({}).lean();
+  const uniqueSizes = await Product.distinct('sizes', { isSale: true });
+  
+  // Получаем уникальные цвета из продуктов
+  const products = await Product.find({ isSale: true }).lean();
+  const uniqueColors = Array.from(
+    new Set(
+      products.map(product => 
+        JSON.stringify({ name: product.color.name, code: product.color.code })
+      )
+    )
+  ).map(colorStr => JSON.parse(colorStr));
 
   return (
     <div className="bg-white min-h-screen flex flex-col">
@@ -64,9 +35,9 @@ export default async function SalePage() {
 
             <Suspense fallback={<Loading />}>
               <ClientFilterWrapper
-                categories={categories}
-                sizes={sizes}
-                colors={colors}
+                categories={categories.map(cat => cat.name)}
+                sizes={uniqueSizes}
+                colors={uniqueColors}
               />
             </Suspense>
           </div>
