@@ -22,7 +22,6 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   const [error, setError] = useState('');
   const router = useRouter();
 
-  // Весь ваш существующий код валидации и обработки формы
   const validatePassword = (): string | null => {
     if (newPassword !== confirmPassword) {
       return 'Пароли не совпадают';
@@ -76,7 +75,6 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
       setStatus('success');
       
-      // Redirect to login page after 2 seconds
       setTimeout(() => {
         router.push('/login');
       }, 2000);
@@ -90,7 +88,84 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
   return (
     <form className="mt-8 space-y-6" onSubmit={handleSubmit} noValidate>
-      {/* Весь ваш существующий JSX код формы */}
+      <div className="rounded-md shadow-sm -space-y-px">
+        <div>
+          <label htmlFor="new-password" className="sr-only">
+            Новый пароль
+          </label>
+          <input
+            id="new-password"
+            name="new-password"
+            type="password"
+            required
+            className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-black focus:border-black focus:z-10 sm:text-sm"
+            placeholder="Новый пароль"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            disabled={isFormDisabled}
+            minLength={8}
+            aria-invalid={error ? 'true' : 'false'}
+          />
+        </div>
+        <div>
+          <label htmlFor="confirm-password" className="sr-only">
+            Подтвердите пароль
+          </label>
+          <input
+            id="confirm-password"
+            name="confirm-password"
+            type="password"
+            required
+            className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-black focus:border-black focus:z-10 sm:text-sm"
+            placeholder="Подтвердите пароль"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            disabled={isFormDisabled}
+            minLength={8}
+            aria-invalid={error ? 'true' : 'false'}
+          />
+        </div>
+      </div>
+
+      {error && (
+        <div 
+          className="text-red-600 text-sm text-center" 
+          role="alert"
+          aria-live="polite"
+        >
+          {error}
+        </div>
+      )}
+
+      {status === 'success' && (
+        <div 
+          className="text-green-600 text-sm text-center"
+          role="alert"
+          aria-live="polite"
+        >
+          Пароль успешно изменен! Сейчас вы будете перенаправлены на страницу входа...
+        </div>
+      )}
+
+      <div>
+        <button
+          type="submit"
+          disabled={isFormDisabled}
+          className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-200"
+          aria-busy={status === 'loading'}
+        >
+          {status === 'loading' ? 'Сохранение...' : 'Сохранить новый пароль'}
+        </button>
+      </div>
+
+      <div className="text-sm text-center">
+        <Link
+          href="/login"
+          className="font-medium text-black hover:text-gray-800"
+        >
+          Вернуться к входу
+        </Link>
+      </div>
     </form>
   );
 }
