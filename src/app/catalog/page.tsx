@@ -3,10 +3,16 @@ import dbConnect from '@/lib/db/mongoose';
 import CatalogContent from './CatalogContent';
 import Loading from './loading';
 
-export default async function CatalogPage() {
-  await dbConnect();
-  
+export const dynamic = 'force-dynamic'; // Добавляем эту строку
+export const revalidate = 0; // И эту строку
 
+export default async function CatalogPage() {
+  try {
+    await dbConnect();
+  } catch (error) {
+    console.error('Failed to connect to database:', error);
+    // Можно добавить обработку ошибки здесь
+  }
 
   return (
     <div className="bg-white min-h-screen flex flex-col">
@@ -21,8 +27,7 @@ export default async function CatalogPage() {
             </div>
 
             <Suspense fallback={<Loading />}>
-              <CatalogContent
-              />
+              <CatalogContent />
             </Suspense>
           </div>
         </div>
