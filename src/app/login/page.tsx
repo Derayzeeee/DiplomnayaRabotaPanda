@@ -44,6 +44,7 @@ function LoginContent() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ email: email.trim(), password: password.trim() }),
       });
 
@@ -54,7 +55,8 @@ function LoginContent() {
       }
 
       await updateAuthStatus();
-      router.push('/profile');
+      await router.replace('/profile');
+      window.location.reload();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Произошла ошибка');
     } finally {

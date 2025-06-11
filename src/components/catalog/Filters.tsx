@@ -252,17 +252,18 @@ export default function Filters({
         </h3>
         <div className="flex flex-wrap gap-2">
           {SIZES.map((size) => (
-            <button
+            <motion.button
               key={size}
               onClick={() => handleFilterChange('sizes', size)}
+              whileTap={{ scale: 0.95 }}
               className={`px-3 py-1 text-sm border transition-all duration-200
                 ${selectedSizes.includes(size)
-                  ? 'border-panda-black bg-panda-black text-black'
-                  : 'border-panda-gray-medium text-panda-gray-dark hover:border-panda-black hover:text-panda-black'
+                  ? 'border-black bg-black text-white' 
+                  : 'border-black bg-white text-black hover:border-black hover:text-black'
                 }`}
             >
               {size}
-            </button>
+            </motion.button>
           ))}
         </div>
       </div>
@@ -307,17 +308,18 @@ export default function Filters({
           </h3>
           <div className="flex gap-2">
             {HEIGHTS.map((height) => (
-              <button
+              <motion.button
                 key={height}
                 onClick={() => handleFilterChange('heights', height)}
+                whileTap={{ scale: 0.95 }}
                 className={`px-3 py-1 text-sm border transition-all duration-200
                   ${selectedHeights.includes(height)
-                    ? 'border-panda-black bg-panda-black text-white'
-                    : 'border-panda-gray-medium text-panda-gray-dark hover:border-panda-black hover:text-panda-black'
+                    ? 'border-black bg-black text-white' 
+                    : 'border-black bg-white text-black hover:border-black hover:text-black'
                   }`}
               >
                 {height}
-              </button>
+              </motion.button>
             ))}
           </div>
         </div>

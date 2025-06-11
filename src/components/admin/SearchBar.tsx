@@ -45,8 +45,8 @@ export default function AdminSearchBar({ isLoading = false }: AdminSearchBarProp
         value={searchQuery}
         onChange={handleSearchChange}
         placeholder="Поиск товаров по названию..."
-        className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg
-                 focus:outline-none focus:ring-2 focus:ring-blue-500 
+        className="w-full px-4 py-2 pr-10 border border-gray-600 rounded-lg
+                 focus:outline-none focus:ring-2 focus:ring-black-500 
                  focus:border-transparent placeholder-gray-400"
         aria-label="Поиск товаров"
       />

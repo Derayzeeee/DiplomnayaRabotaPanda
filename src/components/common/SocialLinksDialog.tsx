@@ -41,7 +41,7 @@ export default function SocialLinksDialog() {
 
               <div className="mt-4 space-y-4">
                 <a
-                  href="https://instagram.com"
+                  href="https://www.instagram.com/panda.by/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center space-x-2 p-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
@@ -53,7 +53,7 @@ export default function SocialLinksDialog() {
                 </a>
 
                 <a
-                  href="https://vk.com"
+                  href="https://vk.com/odo.panda"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center space-x-2 p-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"

@@ -8,7 +8,6 @@ import Image from 'next/image';
 import ConfirmationModal from '@/components/ui/ConfirmationModal';
 import AdminSearchBar from '@/components/admin/SearchBar';
 
-// Компонент для отображения статуса
 const StatusBadge = ({ 
   type, 
   text 
@@ -30,11 +29,11 @@ const StatusBadge = ({
   );
 };
 
-// Основной контент админ-панели
 function AdminPanelContent() {
   const [products, setProducts] = useState<ProductWithId[]>([]);
   const [productToDelete, setProductToDelete] = useState<ProductWithId | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -107,6 +106,29 @@ function AdminPanelContent() {
     return { type: 'success' as const, text: 'В наличии' };
   };
 
+  const handleSort = () => {
+    if (!sortOrder) {
+      // Сортировка по убыванию
+      const sorted = [...products].sort((a, b) => b.stockQuantity - a.stockQuantity);
+      setProducts(sorted);
+      setSortOrder('desc');
+    } else if (sortOrder === 'desc') {
+      // Сортировка по возрастанию
+      const sorted = [...products].sort((a, b) => a.stockQuantity - b.stockQuantity);
+      setProducts(sorted);
+      setSortOrder('asc');
+    } else {
+      // Возврат к исходному порядку
+      fetchProducts(searchParams?.get('query') ?? '');
+      setSortOrder(null);
+    }
+  };
+
+  const getSortIcon = () => {
+    if (!sortOrder) return '↓/↑';
+    return sortOrder === 'desc' ? '↓' : '↑';
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 pt-24">
       <div className="flex flex-col gap-6 mb-6">
@@ -150,8 +172,14 @@ function AdminPanelContent() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Категория
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  На складе
+                <th 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  onClick={handleSort}
+                >
+                  <div className="flex items-center gap-1">
+                    На складе
+                    <span className="ml-1">{getSortIcon()}</span>
+                  </div>
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Статус
@@ -242,10 +270,6 @@ function AdminPanelContent() {
   );
 }
 
-/**
- * Admin Panel Page Component
- * Created by Derayzeeee on 2025-06-06 19:11:03
- */
 export default function AdminPanel() {
   return (
     <Suspense fallback={

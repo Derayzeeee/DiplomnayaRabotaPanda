@@ -1,28 +1,13 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 export default function LogoutButton() {
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    try {
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
-      });
-
-      if (response.ok) {
-        router.push('/login');
-        router.refresh();
-      }
-    } catch (error) {
-      console.error('Ошибка при выходе:', error);
-    }
-  };
+  const { logout } = useAuth();
 
   return (
     <button
-      onClick={handleLogout}
+      onClick={logout}
       className="text-sm font-medium text-gray-700 hover:text-gray-900"
     >
       Выйти

@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const data = await response.json();
       setUser(data.user);
-      router.push('/');
+      router.push('/profile');
       router.refresh(); // Обновляем страницу для применения изменений
     } catch (error) {
       throw error;
@@ -91,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const data = await response.json();
       setUser(data.user);
-      router.push('/');
+      router.push('/login');
       router.refresh(); // Обновляем страницу для применения изменений
     } catch (error) {
       throw error;

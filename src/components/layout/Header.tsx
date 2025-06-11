@@ -4,24 +4,31 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 
-
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
 
   // Компонент кнопки авторизации
   const AuthButton = () => {
+    if (loading) {
+      return (
+        <div className="px-4 py-2 bg-gray-200 animate-pulse rounded">
+          <span className="invisible">Загрузка</span>
+        </div>
+      );
+    }
+
     return isAuthenticated ? (
       <Link 
         href="/profile" 
-        className="px-4 py-1 bg-black text-white  hover:bg-gray-800 transition-colors"
+        className="px-4 py-1 bg-black text-white hover:bg-gray-800 transition-colors"
       >
         Профиль
       </Link>
     ) : (
       <Link 
         href="/login" 
-        className="px-4 py-2 bg-black text-white  hover:bg-gray-800 transition-colors"
+        className="px-4 py-2 bg-black text-white hover:bg-gray-800 transition-colors"
       >
         Войти
       </Link>

@@ -1,21 +1,22 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { checkAuthStatus } from '@/lib/client-auth';
+import { useRouter } from 'next/navigation';
 
-// Добавляем интерфейс для пользователя
 interface User {
-  userId: string;
+  id: string;
   email: string;
+  name: string;
   role: string;
 }
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  setIsAuthenticated: (value: boolean) => void;
-  updateAuthStatus: () => Promise<void>;
   user: User | null;
-  setUser: (user: User | null) => void;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  updateAuthStatus: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,20 +24,26 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   const updateAuthStatus = async () => {
     try {
-      const status = await checkAuthStatus();
-      setIsAuthenticated(status);
+      const response = await fetch('/api/auth/check', {
+        credentials: 'include'
+      });
       
-      if (status) {
-        // Получаем информацию о пользователе
-        const response = await fetch('/api/auth/user');
-        if (response.ok) {
-          const userData = await response.json();
-          setUser(userData);
-        } else {
-          setUser(null);
+      const data = await response.json();
+      setIsAuthenticated(data.isAuthenticated);
+      
+      if (data.isAuthenticated) {
+        const userResponse = await fetch('/api/auth/me', {
+          credentials: 'include'
+        });
+        
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          setUser(userData.user);
         }
       } else {
         setUser(null);
@@ -45,6 +52,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Error updating auth status:', error);
       setIsAuthenticated(false);
       setUser(null);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -52,16 +61,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     updateAuthStatus();
   }, []);
 
+  const login = async (email: string, password: string) => {
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || 'Ошибка входа');
+      }
+
+      await updateAuthStatus();
+      await router.replace('/profile');
+      window.location.reload();
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const logout = async () => {
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        setIsAuthenticated(false);
+        setUser(null);
+        await router.replace('/');
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Ошибка при выходе:', error);
+    }
+  };
+
   return (
-    <AuthContext.Provider 
-      value={{ 
-        isAuthenticated, 
-        setIsAuthenticated, 
-        updateAuthStatus,
-        user,
-        setUser
-      }}
-    >
+    <AuthContext.Provider value={{ 
+      isAuthenticated, 
+      user, 
+      loading, 
+      login, 
+      logout, 
+      updateAuthStatus 
+    }}>
       {children}
     </AuthContext.Provider>
   );

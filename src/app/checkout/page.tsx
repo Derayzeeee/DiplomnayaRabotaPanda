@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
+import { useForm } from 'react-hook-form';
 
 interface ShippingAddress {
   fullName: string;
@@ -23,13 +24,20 @@ export default function CheckoutPage() {
   const [error, setError] = useState<string | null>(null);
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('pickup');
   const [totalWithDelivery, setTotalWithDelivery] = useState(cart?.totalAmount || 0);
-  
-  const [formData, setFormData] = useState<ShippingAddress>({
-    fullName: '',
-    phoneNumber: '',
-    address: 'г. Брест, Советская ул., 97', // Значение по умолчанию для самовывоза
-    city: 'Брест', // Значение по умолчанию для самовывоза
-    postalCode: '224030' // Значение по умолчанию для самовывоза
+
+  const { 
+    register, 
+    handleSubmit, 
+    setValue,
+    formState: { errors }
+  } = useForm<ShippingAddress>({
+    defaultValues: {
+      fullName: '',
+      phoneNumber: '',
+      address: 'г. Брест, Советская ул., 97',
+      city: 'Брест',
+      postalCode: '224030'
+    }
   });
 
   // Обновляем общую сумму при изменении способа доставки или суммы корзины
@@ -47,40 +55,20 @@ export default function CheckoutPage() {
     setDeliveryMethod(method);
 
     if (method === 'pickup') {
-      setFormData(prev => ({
-        ...prev,
-        address: 'г. Брест, Советская ул., 97',
-        city: 'Брест',
-        postalCode: '224030'
-      }));
+      setValue('address', 'г. Брест, Советская ул., 97');
+      setValue('city', 'Брест');
+      setValue('postalCode', '224030');
     } else {
-      setFormData(prev => ({
-        ...prev,
-        address: '',
-        city: '',
-        postalCode: ''
-      }));
+      setValue('address', '');
+      setValue('city', '');
+      setValue('postalCode', '');
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const onSubmit = async (data: ShippingAddress) => {
     if (!cart || cart.items.length === 0) {
       setError('Корзина пуста');
       return;
-    }
-
-    if (!formData.fullName.trim() || !formData.phoneNumber.trim()) {
-      setError('Пожалуйста, заполните все обязательные поля');
-      return;
-    }
-
-    if (deliveryMethod !== 'pickup') {
-      if (!formData.address.trim() || !formData.city.trim() || !formData.postalCode.trim()) {
-        setError('Пожалуйста, заполните адрес доставки');
-        return;
-      }
     }
 
     setIsSubmitting(true);
@@ -95,7 +83,7 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           items: cart.items,
           totalAmount: totalWithDelivery,
-          shippingAddress: formData,
+          shippingAddress: data,
           deliveryMethod: deliveryMethod
         }),
       });
@@ -129,14 +117,6 @@ export default function CheckoutPage() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
   };
 
   if (!cart || cart.items.length === 0) {
@@ -177,7 +157,7 @@ export default function CheckoutPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* Способ доставки */}
               <div className="mb-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Способ доставки</h3>
@@ -221,7 +201,7 @@ export default function CheckoutPage() {
                     <span className="text-sm text-gray-900">Почтой Беларуси (по тарифам почты)</span>
                   </label>
                 </div>
-                
+
                 {/* Информация о способе доставки */}
                 <div className="mt-4 p-4 bg-gray-50 rounded-md text-sm text-gray-600">
                   {deliveryMethod === 'pickup' && (
@@ -260,14 +240,23 @@ export default function CheckoutPage() {
                   ФИО
                 </label>
                 <input
-                  type="text"
-                  id="fullName"
-                  name="fullName"
-                  required
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+                  {...register('fullName', {
+                    required: 'Поле ФИО обязательно для заполнения',
+                    minLength: {
+                      value: 5,
+                      message: 'ФИО должно содержать минимум 5 символов'
+                    },
+                    pattern: {
+                      value: /^[А-ЯЁа-яё\s-]+$/,
+                      message: 'ФИО может содержать только кириллицу, пробелы и дефисы'
+                    }
+                  })}
+                  className={`mt-1 block w-full rounded-md shadow-sm focus:border-black focus:ring-black
+                    ${errors.fullName ? 'border-red-300' : 'border-gray-300'}`}
                 />
+                {errors.fullName && (
+                  <p className="mt-1 text-sm text-red-600">{errors.fullName.message}</p>
+                )}
               </div>
 
               <div>
@@ -275,14 +264,19 @@ export default function CheckoutPage() {
                   Телефон
                 </label>
                 <input
-                  type="tel"
-                  id="phoneNumber"
-                  name="phoneNumber"
-                  required
-                  value={formData.phoneNumber}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+                  {...register('phoneNumber', {
+                    required: 'Номер телефона обязателен для заполнения',
+                    pattern: {
+                      value: /^(\+375|80)(29|25|44|33)(\d{7})$/,
+                      message: 'Введите корректный номер телефона в формате +375XX1234567 или 80XX1234567'
+                    }
+                  })}
+                  className={`mt-1 block w-full rounded-md shadow-sm focus:border-black focus:ring-black
+                    ${errors.phoneNumber ? 'border-red-300' : 'border-gray-300'}`}
                 />
+                {errors.phoneNumber && (
+                  <p className="mt-1 text-sm text-red-600">{errors.phoneNumber.message}</p>
+                )}
               </div>
 
               {/* Адрес доставки (скрыт при самовывозе) */}
@@ -293,14 +287,19 @@ export default function CheckoutPage() {
                       Адрес
                     </label>
                     <input
-                      type="text"
-                      id="address"
-                      name="address"
-                      required
-                      value={formData.address}
-                      onChange={handleChange}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+                      {...register('address', {
+                        required: 'Адрес обязателен для заполнения',
+                        minLength: {
+                          value: 5,
+                          message: 'Адрес должен содержать минимум 5 символов'
+                        }
+                      })}
+                      className={`mt-1 block w-full rounded-md shadow-sm focus:border-black focus:ring-black
+                        ${errors.address ? 'border-red-300' : 'border-gray-300'}`}
                     />
+                    {errors.address && (
+                      <p className="mt-1 text-sm text-red-600">{errors.address.message}</p>
+                    )}
                   </div>
 
                   <div>
@@ -308,14 +307,19 @@ export default function CheckoutPage() {
                       Город
                     </label>
                     <input
-                      type="text"
-                      id="city"
-                      name="city"
-                      required
-                      value={formData.city}
-                      onChange={handleChange}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+                      {...register('city', {
+                        required: 'Город обязателен для заполнения',
+                        pattern: {
+                          value: /^[А-ЯЁа-яё\s-]+$/,
+                          message: 'Название города может содержать только кириллицу, пробелы и дефисы'
+                        }
+                      })}
+                      className={`mt-1 block w-full rounded-md shadow-sm focus:border-black focus:ring-black
+                        ${errors.city ? 'border-red-300' : 'border-gray-300'}`}
                     />
+                    {errors.city && (
+                      <p className="mt-1 text-sm text-red-600">{errors.city.message}</p>
+                    )}
                   </div>
 
                   <div>
@@ -323,14 +327,19 @@ export default function CheckoutPage() {
                       Почтовый индекс
                     </label>
                     <input
-                      type="text"
-                      id="postalCode"
-                      name="postalCode"
-                      required
-                      value={formData.postalCode}
-                      onChange={handleChange}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+                      {...register('postalCode', {
+                        required: 'Почтовый индекс обязателен для заполнения',
+                        pattern: {
+                          value: /^\d{6}$/,
+                          message: 'Почтовый индекс должен содержать 6 цифр'
+                        }
+                      })}
+                      className={`mt-1 block w-full rounded-md shadow-sm focus:border-black focus:ring-black
+                        ${errors.postalCode ? 'border-red-300' : 'border-gray-300'}`}
                     />
+                    {errors.postalCode && (
+                      <p className="mt-1 text-sm text-red-600">{errors.postalCode.message}</p>
+                    )}
                   </div>
                 </>
               )}
@@ -377,7 +386,7 @@ export default function CheckoutPage() {
                     <p className="font-medium">
                       {(item.price * item.quantity).toLocaleString('ru-RU')} BYN
                     </p>
-                  </div>
+                     </div>
                 ))}
                 <div className="border-t pt-4 mt-4">
                   <div className="flex justify-between text-base text-gray-500 mb-2">
