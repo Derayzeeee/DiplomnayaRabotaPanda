@@ -11,7 +11,6 @@ export interface IUser extends Document {
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
-// Определяем тип ошибки для обработки ошибок хеширования
 interface HashingError extends Error {
   code?: string;
 }
@@ -28,7 +27,7 @@ const userSchema = new mongoose.Schema<IUser>({
     type: String,
     required: true,
     minlength: 6,
-    select: false, // Не включать пароль при запросах по умолчанию
+    select: false,
   },
   name: {
     type: String,
@@ -44,7 +43,6 @@ const userSchema = new mongoose.Schema<IUser>({
   timestamps: true,
 });
 
-// Хэширование пароля перед сохранением
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   
@@ -58,7 +56,6 @@ userSchema.pre('save', async function(next) {
   }
 });
 
-// Метод для проверки пароля
 userSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
   try {
     return await bcrypt.compare(candidatePassword, this.password);

@@ -36,25 +36,20 @@ export function useProductFilters({colors = [] }: UseProductFiltersProps) {
 
   const filterProducts = useCallback((products: ProductWithId[]) => {
     return products.filter(product => {
-      // Фильтрация по категориям
       if (activeFilters.categories.length > 0 && 
           !activeFilters.categories.includes(product.category)) {
         return false;
       }
 
-      // Фильтрация по размерам
       if (activeFilters.sizes.length > 0 && 
           !product.sizes.some(size => activeFilters.sizes.includes(size))) {
         return false;
       }
 
-      // Фильтрация по цветам
       if (activeFilters.colors.length > 0) {
-        // Находим соответствующий цвет в списке доступных цветов по имени
         const selectedColors = activeFilters.colors;
         const productColorName = product.color.name.toLowerCase();
         
-        // Проверяем, есть ли цвет продукта среди выбранных цветов
         const isColorMatched = colors.some(availableColor => 
           availableColor.name.toLowerCase() === productColorName && 
           selectedColors.includes(availableColor.code)
@@ -65,7 +60,6 @@ export function useProductFilters({colors = [] }: UseProductFiltersProps) {
         }
       }
 
-      // Фильтрация по росту
       if (activeFilters.heights.length > 0 && 
           product.heights && 
           Array.isArray(product.heights) && 

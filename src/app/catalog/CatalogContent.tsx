@@ -59,7 +59,6 @@ export default function CatalogContent() {
     <div className="min-h-screen bg-panda-white">
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Боковая панель с фильтрами */}
           <aside className="lg:w-64 flex-shrink-0">
             <div className="border-0 border-panda-black p-6 sticky top-24">
               <FilterWrapper
@@ -71,7 +70,6 @@ export default function CatalogContent() {
             </div>
           </aside>
 
-          {/* Основной контент */}
           <div className="flex-1">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-xl font-bold text-panda-black">

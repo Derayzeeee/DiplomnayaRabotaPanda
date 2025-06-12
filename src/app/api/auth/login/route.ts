@@ -11,7 +11,6 @@ export async function POST(request: Request) {
     
     const { email, password } = await request.json();
 
-    // Явно указываем тип документа как IUser
     const user = await User.findOne({ email }).select('+password');
     
     if (!user) {
@@ -21,7 +20,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Используем метод из модели с правильной типизацией
     const isValidPassword = await user.comparePassword(password);
     
     if (!isValidPassword) {
@@ -37,7 +35,6 @@ export async function POST(request: Request) {
       { expiresIn: '7d' }
     );
 
-    // Создаем response и устанавливаем cookie
     const response = NextResponse.json({
       message: 'Успешная авторизация',
       user: {
@@ -48,7 +45,6 @@ export async function POST(request: Request) {
       }
     });
 
-    // Устанавливаем cookie через response.cookies
     response.cookies.set('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

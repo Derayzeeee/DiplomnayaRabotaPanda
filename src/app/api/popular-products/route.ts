@@ -6,7 +6,6 @@ export async function GET() {
   try {
     await dbConnect();
 
-    // Получаем 3 случайных товара из MongoDB
     const randomProducts = await Product.aggregate([
       { $sample: { size: 3 } },
       {
@@ -20,7 +19,6 @@ export async function GET() {
       }
     ]);
 
-    // Преобразуем _id в строку для корректной передачи через JSON
     const products = randomProducts.map(product => ({
       ...product,
       id: product._id.toString()

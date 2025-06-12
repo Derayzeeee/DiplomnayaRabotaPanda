@@ -8,7 +8,6 @@ export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isAuthenticated, loading } = useAuth();
 
-  // Компонент кнопки авторизации
   const AuthButton = () => {
     if (loading) {
       return (
@@ -45,9 +44,7 @@ export const Header = () => {
           >
             PandaStore
           </Link>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-5">
             <Link 
               href="/catalog" 
               className="text-gray-700 hover:text-black transition-colors"
@@ -81,7 +78,6 @@ export const Header = () => {
             <AuthButton />
           </div>
 
-          {/* Mobile Menu Button */}
           <button
             className="md:hidden p-2"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -94,7 +90,6 @@ export const Header = () => {
           </button>
         </div>
 
-        {/* Mobile Menu */}
         <div className={`md:hidden transition-all duration-300 ease-in-out ${isMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'} overflow-hidden`}>
           <div className="pt-4 pb-3 space-y-3">
             <Link 

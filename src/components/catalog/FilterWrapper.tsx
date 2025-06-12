@@ -7,7 +7,7 @@ import { Color } from '@/types/product';
 interface FilterWrapperProps {
   categories: string[];
   sizes: string[];
-  colors: Color[]; // Добавляем colors в пропсы
+  colors: Color[];
   onFiltersChange?: (filters: {
     categories: string[];
     sizes: string[];
@@ -19,7 +19,7 @@ interface FilterWrapperProps {
 export default function FilterWrapper({ 
   categories, 
   sizes,
-  colors, // Принимаем colors из пропсов
+  colors,
   onFiltersChange 
 }: FilterWrapperProps) {
   const [activeFilters, setActiveFilters] = useState({
@@ -39,7 +39,7 @@ export default function FilterWrapper({
       <Filters
         categories={categories}
         sizes={sizes}
-        colors={colors} // Передаем цвета дальше в компонент Filters
+        colors={colors}
         onFilterChange={handleFilterChange}
         initialFilters={activeFilters}
       />

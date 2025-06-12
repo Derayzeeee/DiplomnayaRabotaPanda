@@ -6,7 +6,6 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export async function GET() {
   try {
-    // Ждем получения cookies с помощью await
     const cookieStore = await cookies();
     const token = cookieStore.get('token');
 
@@ -14,7 +13,6 @@ export async function GET() {
       return NextResponse.json({ isAuthenticated: false });
     }
 
-    // Проверяем валидность токена
     const verified = jwt.verify(token.value, JWT_SECRET);
     
     return NextResponse.json({ 

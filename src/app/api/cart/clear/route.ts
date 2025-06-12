@@ -17,7 +17,6 @@ export async function POST(request: NextRequest) {
 
     await dbConnect();
     
-    // Полностью удаляем корзину пользователя
     await Cart.findOneAndDelete({ userId: userData.userId });
 
     return NextResponse.json({ 

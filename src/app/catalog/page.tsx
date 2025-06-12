@@ -3,15 +3,14 @@ import dbConnect from '@/lib/db/mongoose';
 import CatalogContent from './CatalogContent';
 import Loading from './loading';
 
-export const dynamic = 'force-dynamic'; // Добавляем эту строку
-export const revalidate = 0; // И эту строку
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function CatalogPage() {
   try {
     await dbConnect();
   } catch (error) {
     console.error('Failed to connect to database:', error);
-    // Можно добавить обработку ошибки здесь
   }
 
   return (

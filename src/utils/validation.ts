@@ -1,5 +1,3 @@
-// Валидация email
-// Валидация email
 export const validateEmail = (email: string): { isValid: boolean; error?: string } => {
   if (!email) {
     return { isValid: false, error: 'Email обязателен' };
@@ -13,7 +11,6 @@ export const validateEmail = (email: string): { isValid: boolean; error?: string
   return { isValid: true };
 };
 
-// Валидация пароля
 export const validatePassword = (password: string): { isValid: boolean; errors: string[] } => {
   const errors: string[] = [];
 
@@ -46,19 +43,16 @@ export const validatePassword = (password: string): { isValid: boolean; errors: 
 };
 
 
-// Валидация белорусского номера телефона
 export const validatePhoneNumber = (phone: string): boolean => {
   const regex = /^\+375 \((17|29|33|44|25)\) \d{3}-\d{2}-\d{2}$/;
   return regex.test(phone);
 };
 
-// Валидация почтового индекса
 export const validatePostalCode = (code: string): boolean => {
   const regex = /^\d{6}$/;
   return regex.test(code);
 };
 
-// Валидация ФИО
 export const validateFullName = (name: string): boolean => {
   const regex = /^[А-ЯЁа-яё\s-]{2,50}$/;
   return regex.test(name);

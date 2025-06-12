@@ -19,9 +19,8 @@ export async function GET(req: NextRequest) {
       .populate('productId')
       .lean();
 
-    // Фильтруем записи с null productId и преобразуем остальные
     const products = favorites
-      .filter(fav => fav.productId && fav.productId._id) // добавляем проверку
+      .filter(fav => fav.productId && fav.productId._id)
       .map(fav => ({
         ...fav.productId,
         _id: fav.productId._id.toString(),
@@ -54,13 +53,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
     }
 
-    // Проверяем существование продукта перед добавлением в избранное
     const product = await Product.findById(productId);
     if (!product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
-    // Проверяем существующее избранное
     const existingFavorite = await Favorite.findOne({
       userId: user.email,
       productId
@@ -73,13 +70,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Создаем новую запись в избранном
     const favorite = await Favorite.create({
       userId: user.email,
       productId
     });
 
-    await favorite.populate('productId'); // Добавляем populate при создании
+    await favorite.populate('productId');
 
     return NextResponse.json(
       { 

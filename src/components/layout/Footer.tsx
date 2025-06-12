@@ -8,9 +8,8 @@ export default function Footer() {
   return (
     <footer className="bg-white border-t border-gray-200 mt-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" >
-        <div className="py-16 flex justify-center"> {/* Добавлен flex justify-center */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-4xl"> {/* Добавлен w-full max-w-4xl */}
-            {/* О магазине */}
+        <div className="py-16 flex justify-center">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-4xl">
             <div>
               <h3 className="text-sm font-semibold text-gray-900">О магазине</h3>
               <ul className="mt-4 space-y-3">
@@ -29,8 +28,6 @@ export default function Footer() {
                 </li>
               </ul>
             </div>
-
-            {/* Покупателям */}
             <div>
               <h3 className="text-sm font-semibold text-gray-900">Покупателям</h3>
               <ul className="mt-4 space-y-3">
@@ -49,8 +46,6 @@ export default function Footer() {
                 </li>
               </ul>
             </div>
-
-            {/* Мой аккаунт */}
             <div>
               <h3 className="text-sm font-semibold text-gray-900">Мой аккаунт</h3>
               <ul className="mt-4 space-y-3">
@@ -73,8 +68,6 @@ export default function Footer() {
             </div>
           </div>
         </div>
-
-        {/* Нижняя часть футера */}
         <div className="border-t border-gray-200 py-8">
           <p className="text-sm text-gray-600 text-center">
             © 2025 PandaStore. Все права защищены.

@@ -11,17 +11,14 @@ interface MongooseConnection {
 }
 
 declare global {
-  // eslint-disable-next-line no-var
   var mongooseGlobal: MongooseConnection | undefined;
 }
 
-// Получаем существующее соединение или создаем новое
 const cached = global.mongooseGlobal || {
   conn: null,
   promise: null
 };
 
-// Присваиваем кэшированное значение глобальной переменной
 if (!global.mongooseGlobal) {
   global.mongooseGlobal = cached;
 }
@@ -38,12 +35,10 @@ if (!MONGODB_URI) {
  */
 async function dbConnect(): Promise<typeof mongoose> {
   try {
-    // Return existing connection if available
     if (cached.conn) {
       return cached.conn;
     }
 
-    // Create new connection if no promise exists
     if (!cached.promise) {
       const opts = {
         bufferCommands: false,
@@ -52,13 +47,11 @@ async function dbConnect(): Promise<typeof mongoose> {
       cached.promise = mongoose.connect(MONGODB_URI, opts);
     }
 
-    // Wait for connection to complete
     const instance = await cached.promise;
     cached.conn = instance;
 
     return instance;
   } catch (error) {
-    // Reset promise on error
     cached.promise = null;
     throw error;
   }

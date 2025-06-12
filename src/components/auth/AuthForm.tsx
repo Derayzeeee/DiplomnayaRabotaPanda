@@ -45,7 +45,6 @@ export default function AuthForm({ mode }: AuthFormProps) {
         throw new Error(data.message || 'Что-то пошло не так');
       }
 
-      // Успешная авторизация/регистрация
       router.push('/');
       router.refresh();
     }catch (err) {

@@ -47,19 +47,16 @@ export default function ClientFilterWrapper() {
         
         const products = await response.json() as Product[];
 
-        // Извлекаем уникальные категории
         const uniqueCategories = Array.from(
           new Set(products.map((product: Product) => product.category))
         ).filter(Boolean) as string[];
         setCategories(uniqueCategories);
 
-        // Извлекаем уникальные размеры
         const uniqueSizes = Array.from(
           new Set(products.flatMap((product: Product) => product.sizes))
         ).filter(Boolean) as string[];
         setSizes(uniqueSizes);
 
-        // Извлекаем уникальные цвета
         const uniqueColors = Array.from(
           new Map(
             products

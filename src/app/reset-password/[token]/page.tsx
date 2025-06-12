@@ -1,7 +1,6 @@
 import type { Metadata } from 'next/types';
 import ResetPasswordForm from '@/components/auth/ResetPasswordForm';
 
-// Определяем типы параметров для generateMetadata и страницы
 type PageParams = {
   token: string;
 };
@@ -11,16 +10,12 @@ type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }> | undefined;
 };
 
-// Так как метаданные статические, можно экспортировать их как константу
 export const metadata: Metadata = {
   title: 'Сброс пароля',
   description: 'Страница сброса пароля',
 };
 
-/**
- * Reset Password Page Component
- * Created by Derayzeeee on 2025-06-06 19:03:07
- */
+
 export default async function Page({ params }: Props) {
   const resolvedParams = await params;
   

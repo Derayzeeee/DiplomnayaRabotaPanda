@@ -95,18 +95,16 @@ const productSchema = new mongoose.Schema({
     required: true
   }
 }, {
-  timestamps: true, // Автоматически обновляет createdAt и updatedAt
-  toJSON: { virtuals: true }, // Включаем виртуальные поля при преобразовании в JSON
-  toObject: { virtuals: true } // Включаем виртуальные поля при преобразовании в объект
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
-// Middleware для обновления updatedAt перед сохранением
 productSchema.pre('save', function(next) {
   this.updatedAt = new Date();
   next();
 });
 
-// Виртуальное поле для идентификатора
 productSchema.virtual('id').get(function() {
   return this._id.toHexString();
 });
@@ -115,7 +113,6 @@ productSchema.virtual('isLowStock').get(function() {
   return this.stockQuantity <= this.lowStockThreshold;
 });
 
-// Индексы для оптимизации запросов
 productSchema.index({ category: 1 });
 productSchema.index({ isNewProduct: 1 });
 productSchema.index({ isSale: 1 });
@@ -123,19 +120,16 @@ productSchema.index({ price: 1 });
 productSchema.index({ createdAt: -1 });
 productSchema.index({ stockQuantity: 1 });
 
-// Метод для проверки, является ли товар новинкой
 productSchema.methods.isNew = function() {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   return this.createdAt >= thirtyDaysAgo;
 };
 
-// Метод для проверки наличия скидки
 productSchema.methods.hasDiscount = function() {
   return this.isSale && this.oldPrice > this.price;
 };
 
-// Метод для расчета процента скидки
 productSchema.methods.getDiscountPercentage = function() {
   if (!this.isSale || !this.oldPrice) return 0;
   return Math.round(((this.oldPrice - this.price) / this.oldPrice) * 100);
@@ -145,7 +139,6 @@ productSchema.virtual('inStock').get(function() {
   return this.stockQuantity > 0;
 });
 
-// Проверяем существование модели перед созданием новой
 const Product = mongoose.models.Product || mongoose.model('Product', productSchema);
 
 export default Product;

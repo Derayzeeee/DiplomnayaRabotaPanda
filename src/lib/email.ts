@@ -1,6 +1,5 @@
 import nodemailer from 'nodemailer';
 
-// Создаем транспорт для отправки писем
 export const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -9,7 +8,6 @@ export const transporter = nodemailer.createTransport({
   }
 });
 
-// Функция для отправки письма восстановления
 export async function sendPasswordResetEmail(email: string, resetToken: string) {
   const resetLink = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password/${resetToken}`;
 

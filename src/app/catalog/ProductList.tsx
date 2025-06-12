@@ -29,7 +29,7 @@ interface RawProduct {
   name: string;
   price: number;
   oldPrice?: number;
-  salePrice?: string; // Изменено на string
+  salePrice?: string;
   description: string;
   images: string[];
   category: string;
@@ -78,10 +78,9 @@ export default function ProductList({
         stockQuantity: item.stockQuantity || 0,
         lowStockThreshold: item.lowStockThreshold || 5,
         oldPrice: item.oldPrice || undefined,
-        // Преобразуем salePrice в строку
         salePrice: item.isSale 
           ? (item.salePrice || (item.price * 0.8).toString())
-          : '0' // или другое значение по умолчанию в виде строки
+          : '0'
       }));
       
       setProducts(productsWithStringId);

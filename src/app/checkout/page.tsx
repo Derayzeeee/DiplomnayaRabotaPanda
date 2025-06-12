@@ -40,7 +40,6 @@ export default function CheckoutPage() {
     }
   });
 
-  // Обновляем общую сумму при изменении способа доставки или суммы корзины
   useEffect(() => {
     if (!cart) return;
 
@@ -158,7 +157,6 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              {/* Способ доставки */}
               <div className="mb-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Способ доставки</h3>
                 <div className="space-y-4">
@@ -201,8 +199,6 @@ export default function CheckoutPage() {
                     <span className="text-sm text-gray-900">Почтой Беларуси (по тарифам почты)</span>
                   </label>
                 </div>
-
-                {/* Информация о способе доставки */}
                 <div className="mt-4 p-4 bg-gray-50 rounded-md text-sm text-gray-600">
                   {deliveryMethod === 'pickup' && (
                     <p>
@@ -234,7 +230,6 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Контактная информация */}
               <div>
                 <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
                   ФИО
@@ -279,7 +274,6 @@ export default function CheckoutPage() {
                 )}
               </div>
 
-              {/* Адрес доставки (скрыт при самовывозе) */}
               {deliveryMethod !== 'pickup' && (
                 <>
                   <div>
@@ -354,7 +348,6 @@ export default function CheckoutPage() {
             </form>
           </div>
 
-          {/* Сводка заказа */}
           <div>
             <div className="bg-gray-50 p-6 rounded-lg">
               <h2 className="text-lg font-medium text-gray-900 mb-4">

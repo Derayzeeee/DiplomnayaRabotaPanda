@@ -16,7 +16,6 @@ const favoriteSchema = new mongoose.Schema({
   }
 });
 
-// Создаем составной индекс для уникальности комбинации userId и productId
 favoriteSchema.index({ userId: 1, productId: 1 }, { unique: true });
 
 export default mongoose.models.Favorite || mongoose.model('Favorite', favoriteSchema);

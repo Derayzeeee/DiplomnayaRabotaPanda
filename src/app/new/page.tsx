@@ -11,7 +11,6 @@ export default async function NewProductsPage() {
   const categories = await Category.find({}).lean();
   const uniqueSizes = await Product.distinct('sizes', { isNewProduct: true });
   
-  // Получаем уникальные цвета из продуктов
   const products = await Product.find({ isNewProduct: true }).lean();
   const uniqueColors = Array.from(
     new Set(

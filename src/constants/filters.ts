@@ -37,7 +37,6 @@ export const HEIGHTS = [
   '170'
 ] as const;
 
-// Категории, для которых нужно указывать рост
 export const CATEGORIES_WITH_HEIGHT = [
   'Платья',
   'Костюмы юбочные',

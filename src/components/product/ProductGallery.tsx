@@ -14,12 +14,10 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
 
     return (
         <div className="space-y-4">
-            {/* Основное изображение */}
             <div className="relative bg-gray-100 rounded-lg overflow-hidden">
                 <div 
                     className="relative w-full" 
                     style={{ 
-                        // Соотношение 10:15 = (15/10 * 100)% = 150%
                         paddingBottom: '150%'
                     }}
                 >
@@ -35,7 +33,6 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
                 </div>
             </div>
 
-            {/* Миниатюры */}
             <div className="grid grid-cols-4 gap-4">
                 {images.map((image, index) => (
                     <button
@@ -48,7 +45,6 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
                         <div 
                             className="relative w-full" 
                             style={{ 
-                                // Сохраняем то же соотношение 10:15 для миниатюр
                                 paddingBottom: '150%'
                             }}
                         >

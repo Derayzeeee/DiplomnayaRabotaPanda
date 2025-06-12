@@ -4,7 +4,7 @@ import User from '@/models/User';
 import { getTokenData } from '@/lib/auth';
 
 interface JWTPayload {
-  userId: string;  // Убедитесь, что это точно совпадает с тем, что вы сохраняете в токене
+  userId: string;
   email: string;
   role: string;
 }

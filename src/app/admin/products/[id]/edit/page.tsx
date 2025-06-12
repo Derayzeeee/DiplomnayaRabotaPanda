@@ -49,7 +49,6 @@ export default function EditProductPage({ params }: EditProductPageProps) {
           throw new Error('No product data received');
         }
 
-        // Убедимся, что структура цвета корректна
         const productWithFormattedColor = {
           ...data.product,
           color: {
@@ -76,10 +75,8 @@ export default function EditProductPage({ params }: EditProductPageProps) {
       const resolvedParams = await params;
       const id = resolvedParams.id;
 
-      // Подготавливаем данные для обновления
       const updateData = {
         ...productData,
-        // Убедимся, что цвет обновляется корректно
         color: {
           name: productData.color.name,
           code: productData.color.code

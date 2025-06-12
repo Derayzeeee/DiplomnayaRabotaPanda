@@ -43,10 +43,10 @@ export default function PopularProducts() {
 
   if (isLoading) {
     return (
-      <section className="py-16 px-4 bg-white"> {/* Изменен фон на белый */}
+      <section className="py-16 px-4 bg-white">
         <div className="container mx-auto">
           <div className="flex justify-center items-center min-h-[200px]">
-            <div className="animate-spin rounded-none h-12 w-12 border-2 border-black"></div> {/* Изменен спиннер */}
+            <div className="animate-spin rounded-none h-12 w-12 border-2 border-black"></div>
           </div>
         </div>
       </section>
@@ -58,18 +58,17 @@ export default function PopularProducts() {
   }
 
   return (
-    <section className="py-16 px-4 bg-white"> {/* Изменен фон на белый */}
+    <section className="py-16 px-4 bg-white">
       <div className="container mx-auto">
         <h2 className="text-3xl font-bold text-black mb-12 text-center tracking-tight">
           Популярные товары
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"> {/* Увеличен gap */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {products.map((product) => (
             <MotionDiv
               key={product.id}
-              whileHover={{ y: -5 }} // Изменена анимация на подъем
+              whileHover={{ y: -5 }}
               className="group bg-white border-2 border-black transition-all duration-300 overflow-hidden" 
-              // Добавлена жирная рамка, убраны тени и скругления
             >
               <Link href={`/product/${product.id}`}>
                 <div className="aspect-[4/5] relative">
@@ -80,7 +79,6 @@ export default function PopularProducts() {
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
-                  {/* Badges */}
                   <div className="absolute top-4 left-4 flex flex-col gap-2">
                     {product.status === 'NEW' && (
                       <span className="bg-white text-black px-4 py-1 text-sm font-medium border-2 border-black">
@@ -94,7 +92,7 @@ export default function PopularProducts() {
                     )}
                   </div>
                 </div>
-                <div className="p-6"> {/* Увеличен padding */}
+                <div className="p-6">
                   <h3 className="text-lg font-medium text-black group-hover:text-gray-600 transition-colors duration-300">
                     {product.name}
                   </h3>

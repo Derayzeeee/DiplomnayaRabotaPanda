@@ -34,7 +34,6 @@ export default function Register() {
   });
   const router = useRouter();
 
-  // Функция для проверки сложности пароля
   const validatePassword = (password: string): string[] => {
     const errors: string[] = [];
     
@@ -57,7 +56,6 @@ export default function Register() {
     return errors;
   };
 
-  // Функция для проверки доступности name и email
   const checkAvailability = debounce(async (field: 'name' | 'email', value: string) => {
     if (!value) return;
 
@@ -93,7 +91,6 @@ export default function Register() {
     }
   }, 500);
 
-  // Эффект для валидации пароля
   useEffect(() => {
     if (formData.password) {
       const passwordErrors = validatePassword(formData.password);
@@ -123,7 +120,6 @@ export default function Register() {
     }
   }, [formData.password, formData.confirmPassword]);
 
-  // Обработчик изменения полей формы
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -136,11 +132,9 @@ export default function Register() {
     }
   };
 
-  // Обработчик отправки формы
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    // Проверяем наличие ошибок
     if (Object.values(errors).some(error => error) || !availability.name || !availability.email) {
       return;
     }
@@ -177,7 +171,6 @@ export default function Register() {
     }
   };
 
-  // Проверка возможности отправки формы
   const isSubmitDisabled = () => {
     return (
       loading ||

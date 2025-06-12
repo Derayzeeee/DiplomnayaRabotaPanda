@@ -91,5 +91,5 @@ export interface ProductWithId extends Product {
 }
 
 export interface ProductWithStock extends Product {
-  inStock: boolean; // Будет true, если stockQuantity > 0
+  inStock: boolean;
 }

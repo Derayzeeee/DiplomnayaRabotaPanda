@@ -4,7 +4,7 @@ export default function EmptyCart() {
   return (
   <div className="min-h-screen bg-white pt-24">
     <div className="container mx-auto px-4">
-      <div className="text-center py-16 border-0 border-black"> {/* Добавили рамку */}
+      <div className="text-center py-16 border-0 border-black">
         <h1 className="text-3xl font-bold text-black mb-4">
           Корзина пуста
         </h1>
@@ -14,7 +14,7 @@ export default function EmptyCart() {
         <Link
           href="/catalog"
           className="inline-block bg-black text-white px-8 py-3 
-                   hover:bg-gray-900 transition-colors border-2 border-black" // Убрали rounded, добавили border
+                   hover:bg-gray-900 transition-colors border-2 border-black"
         >
           Перейти в каталог
         </Link>

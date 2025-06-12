@@ -20,7 +20,6 @@ export async function POST(request: NextRequest) {
     
     const { items, totalAmount, shippingAddress } = await request.json();
 
-    // Проверяем наличие товаров и их количество
     for (const item of items) {
       const product = await Product.findById(item.productId);
       
@@ -39,7 +38,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Создаем заказ
     const order = await Order.create({
       userId: userData.userId,
       items,
@@ -47,7 +45,6 @@ export async function POST(request: NextRequest) {
       shippingAddress,
     });
 
-    // Обновляем количество товаров
     for (const item of items) {
       const product = await Product.findById(item.productId);
       if (product) {

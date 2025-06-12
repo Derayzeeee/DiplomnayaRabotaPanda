@@ -4,7 +4,6 @@ import Product from '@/models/Product';
 import { checkAdminAccess } from '@/lib/auth';
 import { NextRequest } from 'next/server';
 
-// Определяем интерфейс для фильтра продуктов
 interface ProductFilter {
   category?: string;
   price?: {
@@ -112,7 +111,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {...productData } = body;
     
-    // Добавляем автоматическое вычисление inStock
     const stockQuantity = Number(productData.stockQuantity);
     const product = await Product.create({
       ...productData,

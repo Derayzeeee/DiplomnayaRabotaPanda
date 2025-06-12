@@ -19,7 +19,6 @@ export default function ChangePasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  // Функция для проверки сложности пароля
   const validatePassword = (password: string): string[] => {
     const errors: string[] = [];
     
@@ -49,14 +48,12 @@ export default function ChangePasswordPage() {
       [name]: value
     }));
 
-    // Очищаем ошибки при вводе
     setErrors(prev => ({
       ...prev,
       [name]: undefined,
       submit: undefined
     }));
 
-    // Валидация нового пароля
     if (name === 'newPassword' && value) {
       const passwordErrors = validatePassword(value);
       if (passwordErrors.length > 0) {
@@ -67,7 +64,6 @@ export default function ChangePasswordPage() {
       }
     }
 
-    // Проверка совпадения паролей
     if (name === 'confirmPassword' || name === 'newPassword') {
       if (name === 'confirmPassword' && value !== formData.newPassword) {
         setErrors(prev => ({
@@ -86,7 +82,6 @@ export default function ChangePasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Проверяем все ошибки
     const newPasswordErrors = validatePassword(formData.newPassword);
     if (newPasswordErrors.length > 0) {
       setErrors(prev => ({
@@ -134,14 +129,12 @@ export default function ChangePasswordPage() {
         throw new Error(data.error || 'Что-то пошло не так');
       }
 
-      // Очищаем форму
       setFormData({
         currentPassword: '',
         newPassword: '',
         confirmPassword: ''
       });
       
-      // Возвращаемся на страницу профиля через 2 секунды
       setTimeout(() => {
         router.push('/profile');
       }, 2000);

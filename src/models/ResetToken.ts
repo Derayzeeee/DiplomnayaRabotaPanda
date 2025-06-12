@@ -16,7 +16,6 @@ const resetTokenSchema = new mongoose.Schema({
   }
 });
 
-// Автоматически удалять просроченные токены
 resetTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export const ResetToken = mongoose.models.ResetToken || mongoose.model('ResetToken', resetTokenSchema);

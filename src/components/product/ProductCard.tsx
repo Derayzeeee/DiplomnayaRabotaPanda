@@ -33,7 +33,6 @@ export default function ProductCard({ product, onFavoriteChange }: ProductCardPr
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Контейнер изображения */}
       <div className="relative aspect-[3/4] overflow-hidden bg-[#fafafa]">
         <div 
           className="relative w-full" 
@@ -51,7 +50,6 @@ export default function ProductCard({ product, onFavoriteChange }: ProductCardPr
           )}
         </div>
 
-        {/* Метки Sale и New */}
         <div className="absolute top-2 left-2 flex flex-col gap-2">
           {product.isSale && (
             <div className="bg-red-500 text-white px-3 py-1 text-xs font-medium">
@@ -65,7 +63,6 @@ export default function ProductCard({ product, onFavoriteChange }: ProductCardPr
           )}
         </div> 
 
-        {/* Кнопка избранного */}
         <div className="absolute top-2 right-2">
           <FavoriteButton
             productId={product._id}
@@ -75,7 +72,6 @@ export default function ProductCard({ product, onFavoriteChange }: ProductCardPr
         </div>
       </div>
       
-      {/* Информация о продукте */}
       <Link 
         href={`/product/${product._id}`} 
         className="block mt-3 space-y-1 group-hover:opacity-80 transition-opacity duration-300"
@@ -98,7 +94,6 @@ export default function ProductCard({ product, onFavoriteChange }: ProductCardPr
           )}
         </div>
         <div className="flex items-center gap-3 text-xs text-panda-gray-dark mt-1">
-          {/* Цвет */}
           {product.color && product.color.code ? (
             <div className="flex items-center gap-1">
               <div
@@ -109,7 +104,6 @@ export default function ProductCard({ product, onFavoriteChange }: ProductCardPr
               <span>{product.color.name}</span>
             </div>
           ) : null}
-          {/* Размеры */}
           <div>
             {product.sizes.length} {
               product.sizes.length === 1 ? 'размер' : 

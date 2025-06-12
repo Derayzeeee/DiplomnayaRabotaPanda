@@ -7,7 +7,6 @@ import type { Cart, CartItem, CartContextType } from '@/types/cart';
 import type { Color } from '@/types/product';
 import { toast } from 'react-hot-toast';
 
-// Создаем контекст с начальными значениями
 const CartContext = createContext<CartContextType>({
   cart: null,
   isLoading: true,
@@ -25,7 +24,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
 
-  // Загружаем корзину при монтировании компонента
   useEffect(() => {
     const fetchCart = async () => {
       if (!isAuthenticated) {
@@ -60,7 +58,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      // Проверяем наличие товара на складе
       const stockResponse = await fetch(`/api/products/${item.productId}`);
       if (!stockResponse.ok) {
         throw new Error('Не удалось проверить наличие товара');
@@ -109,7 +106,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      // Проверяем наличие товара на складе
       const stockResponse = await fetch(`/api/products/${productId}`);
       if (!stockResponse.ok) {
         throw new Error('Не удалось проверить наличие товара');
@@ -118,8 +114,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const stockQuantity = productData.product.stockQuantity;
 
       if (newQuantity > stockQuantity) {
-        // Если запрошенное количество больше доступного,
-        // устанавливаем максимально доступное количество
         const updatedCart = {
           ...cart,
           items: cart.items.map(item => {
@@ -135,7 +129,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         };
         setCart(updatedCart);
 
-        // Обновляем количество в БД
         await fetch('/api/cart', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -151,7 +144,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Оптимистичное обновление UI
       const updatedCart = {
         ...cart,
         items: cart.items.map(item => {
@@ -167,7 +159,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       };
       setCart(updatedCart);
 
-      // Отправляем запрос на сервер
       const response = await fetch('/api/cart', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -183,7 +174,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Error updating quantity:', error);
       
-      // Восстанавливаем состояние корзины
       try {
         const response = await fetch('/api/cart');
         if (response.ok) {
@@ -209,7 +199,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      // Оптимистичное обновление UI
       const updatedCart = {
         ...cart,
         items: cart.items.filter(item => 
@@ -236,7 +225,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Error removing item from cart:', error);
       
-      // Восстанавливаем состояние корзины
       try {
         const response = await fetch('/api/cart');
         if (response.ok) {

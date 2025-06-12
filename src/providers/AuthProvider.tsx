@@ -25,7 +25,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Проверяем авторизацию при загрузке и при изменении роута
   useEffect(() => {
     checkAuth();
   }, [router]);
@@ -33,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const checkAuth = async () => {
     try {
       const response = await fetch('/api/auth/me', {
-        credentials: 'include' // Важно для передачи cookies
+        credentials: 'include'
       });
       
       if (response.ok) {
@@ -57,7 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Важно для сохранения cookies
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
 
@@ -68,7 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await response.json();
       setUser(data.user);
       router.push('/profile');
-      router.refresh(); // Обновляем страницу для применения изменений
+      router.refresh();
     } catch (error) {
       throw error;
     }
@@ -81,7 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Важно для сохранения cookies
+        credentials: 'include',
         body: JSON.stringify({ email, password, name }),
       });
 
@@ -92,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await response.json();
       setUser(data.user);
       router.push('/login');
-      router.refresh(); // Обновляем страницу для применения изменений
+      router.refresh();
     } catch (error) {
       throw error;
     }
@@ -102,11 +101,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await fetch('/api/auth/logout', {
         method: 'POST',
-        credentials: 'include' // Важно для передачи cookies
+        credentials: 'include'
       });
       setUser(null);
       router.push('/login');
-      router.refresh(); // Обновляем страницу для применения изменений
+      router.refresh();
     } catch (error) {
       console.error('Ошибка при выходе:', error);
     }

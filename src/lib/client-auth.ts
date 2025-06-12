@@ -1,4 +1,3 @@
-// Функция для проверки авторизации на клиентской стороне
 export const checkAuthStatus = async () => {
     try {
       const response = await fetch('/api/auth/check', {
@@ -6,7 +5,7 @@ export const checkAuthStatus = async () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Важно для передачи cookies
+        credentials: 'include',
       });
   
       if (!response.ok) {

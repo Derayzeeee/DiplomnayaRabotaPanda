@@ -1,4 +1,3 @@
-// Удаляем неиспользуемый импорт Metadata
 declare module 'next' {
   export interface PageProps {
     params: { [key: string]: string };

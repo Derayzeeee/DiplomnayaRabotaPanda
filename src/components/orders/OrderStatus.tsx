@@ -26,18 +26,16 @@ export default function OrderStatus({ initialStatus, orderId, demo = false }: Or
 
     const statusIndex = ORDER_STATUSES.findIndex(s => s.status === currentStatus);
     
-    // Если текущий статус "completed" или "cancelled", останавливаем демо
     if (currentStatus === 'completed' || currentStatus === 'cancelled') {
       setIsDemo(false);
       return;
     }
 
     const interval = setInterval(() => {
-      const nextIndex = (statusIndex + 1) % (ORDER_STATUSES.length - 1); // Исключаем "cancelled"
+      const nextIndex = (statusIndex + 1) % (ORDER_STATUSES.length - 1);
       const nextStatus = ORDER_STATUSES[nextIndex].status;
       setCurrentStatus(nextStatus);
 
-      // Здесь можно добавить вызов API для обновления статуса в базе данных
       console.log(`Заказ ${orderId}: статус изменен на ${ORDER_STATUSES[nextIndex].label}`);
     }, 5000);
 

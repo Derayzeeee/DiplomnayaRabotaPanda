@@ -14,7 +14,6 @@
   }
 }
 
-/* Стили для выпадающего списка */
 select option {
   padding: 8px;
   background-color: white;
@@ -26,12 +25,10 @@ select option:focus {
   background-color: #f3f4f6;
 }
 
-/* Для Firefox */
 select {
   -moz-appearance: none;
 }
 
-/* Для Chrome */
 select::-ms-expand {
   display: none;
 }
@@ -41,7 +38,6 @@ select {
   color: #1a1a1a;
 }
 
-/* Дополнительные стили для темной темы */
 @media (prefers-color-scheme: dark) {
   select,
   select option {
@@ -50,12 +46,10 @@ select {
   }
 }
 
-/* Стили для активного состояния опции */
 select option:checked {
   background-color: #e5e7eb;
 }
 
-/* Добавьте эти стили в конец файла */
 @keyframes fadeIn {
   from {
     opacity: 0;

@@ -9,7 +9,6 @@ export async function POST(request: NextRequest) {
     await dbConnect();
     const { token, newPassword } = await request.json();
 
-    // Находим токен и проверяем что он не истек
     const resetToken = await ResetToken.findOne({
       token,
       expiresAt: { $gt: new Date() }
@@ -22,16 +21,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Хешируем новый пароль
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // Обновляем пароль пользователя
     await User.findOneAndUpdate(
       { email: resetToken.email },
       { password: hashedPassword }
     );
 
-    // Удаляем использованный токен
     await ResetToken.deleteOne({ _id: resetToken._id });
 
     return NextResponse.json({ message: 'Пароль успешно обновлен' });

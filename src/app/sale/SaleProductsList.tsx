@@ -18,7 +18,6 @@ interface SaleProductsListProps {
   availableColors: Color[];
 }
 
-// Интерфейс для сырых данных
 interface RawProduct {
   _id: {
     toString(): string;

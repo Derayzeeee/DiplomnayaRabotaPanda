@@ -30,7 +30,6 @@ export default function ClientFilterWrapper({ categories, sizes, colors }: Clien
 
   return (
     <div className="flex flex-col lg:flex-row gap-8">
-      {/* Боковая панель с фильтрами */}
       <aside className="lg:w-64 flex-shrink-0">
         <div className="border-0 border-panda-black p-6 sticky top-24">
           <FilterWrapper
@@ -42,7 +41,6 @@ export default function ClientFilterWrapper({ categories, sizes, colors }: Clien
         </div>
       </aside>
 
-      {/* Список товаров */}
       <div className="flex-1">
         <NewProductsList 
           initialFilters={filters}

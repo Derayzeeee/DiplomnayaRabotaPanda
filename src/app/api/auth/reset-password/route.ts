@@ -10,7 +10,6 @@ export async function POST(request: NextRequest) {
     await dbConnect();
     const { email } = await request.json();
 
-    // Проверяем существование пользователя
     const user = await User.findOne({ email });
     if (!user) {
       return NextResponse.json(
@@ -19,16 +18,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Генерируем токен
     const token = crypto.randomBytes(32).toString('hex');
 
-    // Сохраняем токен в базе
     await ResetToken.create({
       email,
       token
     });
 
-    // Отправляем email
     await sendPasswordResetEmail(email, token);
 
     return NextResponse.json({ 

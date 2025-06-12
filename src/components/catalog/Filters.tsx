@@ -116,7 +116,6 @@ export default function Filters({
 
   return (
     <div className="space-y-6">
-      {/* Заголовок и кнопка сброса */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-base font-medium text-panda-black">Фильтры</h2>
         <AnimatePresence>
@@ -135,7 +134,6 @@ export default function Filters({
         </AnimatePresence>
       </div>
 
-      {/* Активные фильтры */}
       <AnimatePresence>
         {hasActiveFilters && (
           <motion.div
@@ -217,7 +215,6 @@ export default function Filters({
         )}
       </AnimatePresence>
 
-      {/* Категории */}
       <div>
         <h3 className="text-sm font-medium text-panda-black mb-3 uppercase tracking-wider">
           Категории
@@ -245,7 +242,6 @@ export default function Filters({
         </div>
       </div>
 
-      {/* Размеры */}
       <div>
         <h3 className="text-sm font-medium text-panda-black mb-3 uppercase tracking-wider">
           Размеры
@@ -268,7 +264,6 @@ export default function Filters({
         </div>
       </div>
 
-      {/* Цвета */}
       <div>
         <h3 className="text-sm font-medium text-panda-black mb-3 uppercase tracking-wider">
           Цвета
@@ -300,7 +295,6 @@ export default function Filters({
         </div>
       </div>
 
-      {/* Рост */}
       {showHeightFilter && (
         <div>
           <h3 className="text-sm font-medium text-panda-black mb-3 uppercase tracking-wider">

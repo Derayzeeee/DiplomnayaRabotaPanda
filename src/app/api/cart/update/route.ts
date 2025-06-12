@@ -17,10 +17,8 @@ export async function POST(request: NextRequest) {
 
     await dbConnect();
     
-    // Получаем данные для обновления
     const { items, totalAmount } = await request.json();
     
-    // Находим и обновляем корзину пользователя
     const updatedCart = await Cart.findOneAndUpdate(
       { userId: userData.userId },
       { items, totalAmount },

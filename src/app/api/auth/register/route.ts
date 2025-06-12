@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     }
 
     const existingUser = await User.findOne({
-      $or: [{ email }, { name }] // Изменили username на name
+      $or: [{ email }, { name }]
     });
 
     if (existingUser) {

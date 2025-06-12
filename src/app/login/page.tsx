@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 
-// Основной компонент формы входа
 function LoginContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -204,10 +203,6 @@ function LoginContent() {
   );
 }
 
-/**
- * Login Page Component
- * Created by Derayzeeee on 2025-06-06 19:13:35
- */
 export default function LoginPage() {
   return (
     <Suspense

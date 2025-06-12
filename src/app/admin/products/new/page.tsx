@@ -28,10 +28,8 @@ export default function NewProductPage() {
         throw new Error('Failed to create product');
       }
 
-      // Дожидаемся ответа от сервера
       await response.json();
 
-      // Изменяем порядок: сначала обновляем данные, потом делаем навигацию
       router.refresh();
       router.push('/catalog');
       

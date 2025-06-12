@@ -37,7 +37,6 @@ export default function ConfirmationModal({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          {/* Изменяем цвет и прозрачность фона */}
           <div className="fixed inset-0 bg-gray-500/75 backdrop-blur-sm" />
         </Transition.Child>
 

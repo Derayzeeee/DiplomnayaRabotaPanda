@@ -108,17 +108,14 @@ function AdminPanelContent() {
 
   const handleSort = () => {
     if (!sortOrder) {
-      // Сортировка по убыванию
       const sorted = [...products].sort((a, b) => b.stockQuantity - a.stockQuantity);
       setProducts(sorted);
       setSortOrder('desc');
     } else if (sortOrder === 'desc') {
-      // Сортировка по возрастанию
       const sorted = [...products].sort((a, b) => a.stockQuantity - b.stockQuantity);
       setProducts(sorted);
       setSortOrder('asc');
     } else {
-      // Возврат к исходному порядку
       fetchProducts(searchParams?.get('query') ?? '');
       setSortOrder(null);
     }

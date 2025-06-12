@@ -18,19 +18,19 @@ export default function CartSummary() {
   };
 
   return (
-  <div className="border-0 border-black p-6"> {/* Заменили shadow на border, убрали rounded */}
+  <div className="border-0 border-black p-6">
     <h2 className="text-xl font-bold text-black mb-6 pb-4 border-b-2 border-black">
       Сумма заказа
     </h2>
-    <div className="space-y-4"> {/* Увеличили отступы */}
+    <div className="space-y-4">
       <div className="flex justify-between text-base">
         <span>Товары ({cart.items.length})</span>
         <span>{cart.totalAmount.toLocaleString('ru-RU')} BYN</span>
       </div>
       <div className="flex justify-between text-base">
       </div>
-      <div className="border-t-2 border-black pt-4 mt-4"> {/* Сделали разделитель жирнее */}
-        <div className="flex justify-between text-lg font-bold"> {/* Увеличили жирность */}
+      <div className="border-t-2 border-black pt-4 mt-4">
+        <div className="flex justify-between text-lg font-bold">
           <span>Итого</span>
           <span>{cart.totalAmount.toLocaleString('ru-RU')} BYN</span>
         </div>
@@ -39,7 +39,7 @@ export default function CartSummary() {
     <button 
       onClick={handleCheckout}
       className="w-full mt-8 bg-black text-white py-3 px-4 hover:bg-gray-900 
-                transition-colors border-2 border-black" // Убрали rounded, добавили border
+                transition-colors border-2 border-black"
     >
       Оформить заказ
     </button>

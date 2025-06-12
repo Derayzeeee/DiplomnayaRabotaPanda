@@ -61,7 +61,6 @@ export async function POST(req: NextRequest) {
 
     const cartItem: CartItem = await req.json();
 
-    // Проверяем наличие товара на складе
     const { hasStock, availableQuantity } = await checkProductStock(
       cartItem.productId,
       cartItem.quantity
@@ -90,7 +89,6 @@ export async function POST(req: NextRequest) {
         item.color.code === cartItem.color.code
     );
 
-    // Проверяем общее количество с учетом существующих товаров в корзине
     if (existingItemIndex > -1) {
       const newTotalQuantity = cart.items[existingItemIndex].quantity + cartItem.quantity;
       const { hasStock, availableQuantity } = await checkProductStock(
@@ -136,7 +134,6 @@ export async function PUT(req: NextRequest) {
 
     const { productId, size, color, quantity } = await req.json();
 
-    // Проверяем наличие товара на складе
     const { hasStock, availableQuantity } = await checkProductStock(
       productId,
       quantity

@@ -18,7 +18,6 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   
-  // Состояния для размеров и роста
   const [selectedSizes, setSelectedSizes] = useState<{ [key: string]: boolean }>(
     SIZES.reduce((acc, size) => ({
       ...acc,
@@ -33,13 +32,11 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
     }), {})
   );
 
-  // Состояние для цвета и изображений
   const [color, setColor] = useState<Color>(
     initialData?.color || { name: '', code: '#000000' }
   );
   const [images, setImages] = useState<string[]>(initialData?.images || []);
 
-  // React Hook Form
   const { register, handleSubmit, setValue, watch, reset } = useForm<ProductWithId>({
     defaultValues: initialData || {
       _id: '',
@@ -62,12 +59,10 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
     }
   });
 
-  // Наблюдаем за выбранной категорией и статусом скидки
   const selectedCategory = watch('category');
   const showHeightField = CATEGORIES_WITH_HEIGHT.includes(selectedCategory);
   const isSale = watch('isSale');
 
-  // Эффекты
   useEffect(() => {
     if (initialData) {
       reset(initialData);
@@ -93,7 +88,6 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
     setValue('images', images);
   }, [color, images, setValue]);
 
-  // Обработчики
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
@@ -158,9 +152,7 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
     }));
   };
 
-  // Обработчик отправки формы
   const onFormSubmit = handleSubmit((data: ProductWithId) => {
-  // Подготавливаем финальные данные
   const finalData = {
     ...data,
     _id: initialData?._id || '',
@@ -178,19 +170,16 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
   
   console.log('Submitting data:', finalData);
 
-  // Если это новый товар, удаляем _id
   if (!initialData) {
     const {...submitData } = finalData;
     onSubmit(submitData as ProductWithId);
   } else {
-    // Если это редактирование существующего товара
     onSubmit(finalData);
   }
 });
 
   return (
     <form onSubmit={onFormSubmit} className="space-y-6" >
-      {/* Основные данные */}
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">
@@ -265,7 +254,6 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
         </div>
       </div>
 
-      {/* Размеры */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium">Размеры</h3>
         <div className="border rounded-md p-4">
@@ -285,7 +273,6 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
         </div>
       </div>
 
-      {/* Рост (если применимо) */}
       {showHeightField && (
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Рост</h3>
@@ -307,7 +294,6 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
         </div>
       )}
 
-      {/* Цвет */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium">Цвет</h3>
         <div className="flex flex-col gap-2 max-w-xs">
@@ -334,7 +320,6 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
         </div>
       </div>
 
-      {/* Изображения */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium">Изображения</h3>
         <div className="flex flex-col gap-4">
@@ -412,7 +397,6 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
       </div>
       </div>
 
-      {/* Флажки */}
       <div className="space-y-4">
         <div className="flex items-center gap-4">
           <label className="flex items-center gap-2">
@@ -435,7 +419,6 @@ export default function ProductForm({ initialData, onSubmit, loading }: ProductF
         </div>
       </div>
 
-      {/* Кнопка отправки */}
       <div>
         <button
           type="submit"

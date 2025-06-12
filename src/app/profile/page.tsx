@@ -16,7 +16,6 @@ export default function ProfilePage() {
   const router = useRouter();
   const { updateAuthStatus } = useAuth();
 
-  // Оставляем всю логику без изменений
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -63,7 +62,7 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin h-32 w-32 border-2 border-black"></div> {/* Изменен стиль спиннера */}
+        <div className="animate-spin h-32 w-32 border-2 border-black"></div> 
       </div>
     );
   }
@@ -73,15 +72,15 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white py-16 px-4 sm:px-6 lg:px-8"> {/* Изменен фон и отступы */}
+    <div className="min-h-screen bg-white py-16 px-4 sm:px-6 lg:px-8"> 
       <div className="max-w-3xl mx-auto">
-        <div className="border-0 border-black p-8"> {/* Заменены тени на рамку */}
-          <div className="text-center mb-12"> {/* Увеличен отступ */}
+        <div className="border-0 border-black p-8">
+          <div className="text-center mb-12">
             <h1 className="text-3xl font-bold text-black mb-3">Личный кабинет</h1>
             <p className="text-gray-600">Управляйте своим профилем и настройками</p>
           </div>
 
-          <div className="border-t-2 border-black pt-8"> {/* Изменена толщина разделителя */}
+          <div className="border-t-2 border-black pt-8"> 
             <dl>
               <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
                 <dt className="text-sm font-medium text-gray-600">Email</dt>
@@ -92,8 +91,7 @@ export default function ProfilePage() {
             </dl>
           </div>
 
-          <div className="mt-8 space-y-6"> {/* Увеличены отступы */}
-            {/* Секция заказов */}
+          <div className="mt-8 space-y-6">
             <div className="border-t-2 border-black pt-6">
               <h2 className="text-xl font-bold text-black mb-6">Мои заказы</h2>
               <button
@@ -106,7 +104,6 @@ export default function ProfilePage() {
               </button>
             </div>
 
-            {/* Секция управления профилем */}
             <div className="border-t-2 border-black pt-6">
               <h2 className="text-xl font-bold text-black mb-6">Управление профилем</h2>
               <div className="space-y-4">

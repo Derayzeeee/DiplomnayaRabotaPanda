@@ -11,7 +11,6 @@ interface ProductPageProps {
 }
 
 export default async function ProductPageWrapper({ params }: ProductPageProps) {
-  // Получаем id из Promise params
   const resolvedParams = await params;
   const id = resolvedParams.id;
 

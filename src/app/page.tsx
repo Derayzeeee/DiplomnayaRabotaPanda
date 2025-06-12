@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import PopularProducts from '@/components/product/PopularProducts';
 
-// Определяем интерфейс для пропсов CategoryCard
 interface CategoryCardProps {
   href: string;
   image: string;
@@ -16,7 +15,6 @@ interface CategoryCardProps {
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-neutral-50">
-      {/* Hero Section - Minimalistic Approach */}
       <section className="relative h-[90vh] overflow-hidden">
         <div
           className="absolute inset-0 bg-fixed bg-cover bg-center"
@@ -51,11 +49,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Categories Section - Modern Grid */}
       <section className="py-24 px-6">
         <div className="container mx-auto max-w-7xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            {/* New Arrivals Card */}
             <CategoryCard
               href="/new"
               image="/images/new.jpg"
@@ -63,7 +59,6 @@ export default function HomePage() {
               description="Ознакомьтесь с последними поступлениями"
             />
 
-            {/* Sale Card */}
             <CategoryCard
               href="/sale"
               image="/images/sale.jpg"
@@ -74,7 +69,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Popular Products Section */}
       <section className="py-24 px-6 bg-white">
         <div className="container mx-auto max-w-7xl">
           <PopularProducts />
@@ -84,7 +78,6 @@ export default function HomePage() {
   );
 }
 
-// Category Card Component
 function CategoryCard({ href, image, title, description }: CategoryCardProps) {
   return (
     <motion.div

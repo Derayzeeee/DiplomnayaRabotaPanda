@@ -4,7 +4,6 @@ import dbConnect from '@/lib/db/mongoose';
 import Product from '@/models/Product';
 import type { WithId } from 'mongodb';
 
-// Интерфейсы
 interface RouteParams {
   params: Promise<{ id: string }>;
 }
@@ -30,7 +29,6 @@ interface ProductDocument {
   updatedAt: Date;
 }
 
-// GET метод для получения продукта и связанных товаров
 export async function GET(
   request: NextRequest,
   { params }: RouteParams
@@ -56,7 +54,6 @@ export async function GET(
       );
     }
 
-    // Получаем связанные продукты той же категории
     const rawRelatedProducts = await Product.find({
       category: rawProduct.category,
       _id: { $ne: rawProduct._id }
@@ -64,7 +61,6 @@ export async function GET(
       .limit(4)
       .lean<WithId<ProductDocument>[]>();
 
-    // Форматируем основной продукт
     const formattedProduct = {
       ...rawProduct,
       _id: rawProduct._id.toString(),
@@ -73,7 +69,6 @@ export async function GET(
       stockQuantity: rawProduct.stockQuantity ?? 0
     };
 
-    // Форматируем связанные продукты
     const formattedRelatedProducts = rawRelatedProducts.map(prod => ({
       ...prod,
       _id: prod._id.toString(),
@@ -87,7 +82,6 @@ export async function GET(
       relatedProducts: formattedRelatedProducts
     });
 
-    // Устанавливаем заголовки кэширования
     response.headers.set('Cache-Control', 'no-store, must-revalidate');
     response.headers.set('Last-Modified', new Date().toUTCString());
 
@@ -102,7 +96,6 @@ export async function GET(
   }
 }
 
-// PUT метод для обновления продукта
 export async function PUT(
   req: NextRequest,
   { params }: RouteParams
@@ -122,7 +115,6 @@ export async function PUT(
 
     const data = await req.json();
     
-    // Валидация данных
     if (!data.color || !data.color.name || !data.color.code) {
       return NextResponse.json(
         { error: 'Invalid color data' },
@@ -130,7 +122,6 @@ export async function PUT(
       );
     }
 
-    // Валидация stockQuantity
     if (typeof data.stockQuantity !== 'undefined') {
       if (typeof data.stockQuantity !== 'number' || data.stockQuantity < 0) {
         return NextResponse.json(
@@ -140,10 +131,8 @@ export async function PUT(
       }
     }
 
-    // Убираем _id из данных обновления, если он есть
     const {...updateData } = data;
 
-    // Обновляем продукт
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
       {
@@ -153,7 +142,7 @@ export async function PUT(
           code: data.color.code
         },
         stockQuantity: data.stockQuantity,
-        updatedAt: new Date('2025-06-02T18:09:38Z') // Используем текущую дату из контекста
+        updatedAt: new Date('2025-06-02T18:09:38Z')
       },
       { 
         new: true, 
@@ -186,7 +175,6 @@ export async function PUT(
   }
 }
 
-// DELETE метод для удаления продукта
 export async function DELETE(
   request: NextRequest,
   { params }: RouteParams
@@ -215,7 +203,7 @@ export async function DELETE(
 
     return NextResponse.json({
       message: 'Product deleted successfully',
-      deletedAt: new Date('2025-06-02T18:09:38Z').toISOString() // Используем текущую дату из контекста
+      deletedAt: new Date('2025-06-02T18:09:38Z').toISOString()
     });
 
   } catch (error) {
@@ -227,7 +215,6 @@ export async function DELETE(
   }
 }
 
-// HEAD метод для быстрой проверки наличия товара
 export async function HEAD(
   request: NextRequest,
   { params }: RouteParams
