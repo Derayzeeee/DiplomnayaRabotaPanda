@@ -72,11 +72,7 @@ export default function CatalogContent() {
 
           <div className="flex-1">
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-panda-black">
-
-              </h2>
             </div>
-
             <ProductList 
               initialFilters={filters}
 

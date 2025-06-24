@@ -18,7 +18,7 @@ export default async function CatalogPage() {
       <div className="flex-grow">
         <div className="container mx-auto px-4 pt-24">
           <div className="flex flex-col space-y-6">
-            <div className="text-left max-w-2xl mx-left mb-8">
+            <div className="text-left max-w-2xl mx-left mb-2">
               <h1 className="text-4xl font-bold text-gray-900">Каталог</h1>
               <p className="mt-4 text-lg text-gray-600">
                 Найдите свой идеальный стиль в нашей коллекции

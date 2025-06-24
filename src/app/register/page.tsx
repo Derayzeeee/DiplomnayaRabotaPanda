@@ -161,6 +161,7 @@ export default function Register() {
       }
 
       router.push('/login');
+      window.location.reload();
     } catch (error) {
       setErrors(prev => ({
         ...prev,

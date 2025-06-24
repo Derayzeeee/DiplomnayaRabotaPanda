@@ -123,9 +123,6 @@ export default function ClientFilterWrapper() {
 
       <div className="flex-1">
         <div className="mb-6">
-          <h2 className="text-xl font-bold text-gray-900">
-            {`Товары со скидкой: ${categories.length}`}
-          </h2>
         </div>
         <SaleProductsList 
           initialFilters={filters} 

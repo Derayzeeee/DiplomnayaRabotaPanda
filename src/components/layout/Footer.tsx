@@ -9,10 +9,10 @@ export default function Footer() {
     <footer className="bg-white border-t border-gray-200 mt-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" >
         <div className="py-16 flex justify-center">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-4xl">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-4xl justify-items-center">
             <div>
-              <h3 className="text-sm font-semibold text-gray-900">О магазине</h3>
-              <ul className="mt-4 space-y-3">
+              <h3 className="text-sm font-semibold text-gray-900 text-center">О магазине</h3>
+              <ul className="mt-4 space-y-3 text-center">
                 <li>
                   <Link href="/about" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
                     О нас
@@ -29,8 +29,8 @@ export default function Footer() {
               </ul>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-gray-900">Покупателям</h3>
-              <ul className="mt-4 space-y-3">
+              <h3 className="text-sm font-semibold text-gray-900 text-center">Покупателям</h3>
+              <ul className="mt-4 space-y-3 text-center">
                 <li>
                   <Link href="/delivery" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
                     Доставка
@@ -47,8 +47,8 @@ export default function Footer() {
               </ul>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-gray-900">Мой аккаунт</h3>
-              <ul className="mt-4 space-y-3">
+              <h3 className="text-sm font-semibold text-gray-900 text-center">Мой аккаунт</h3>
+              <ul className="mt-4 space-y-3 text-center">
                 <li>
                   <Link href="/profile" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
                     Профиль

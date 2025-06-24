@@ -389,7 +389,7 @@ export default function CheckoutPage() {
                   {deliveryMethod === 'courier' && cart.totalAmount < 200 && (
                     <div className="flex justify-between text-base text-gray-500 mb-2">
                       <span>Доставка</span>
-                      <span>5.00 BYN</span>
+                      <span>5 BYN</span>
                     </div>
                   )}
                   {deliveryMethod === 'post' && (

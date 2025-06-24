@@ -42,6 +42,8 @@ export default function ClientFilterWrapper({ categories, sizes, colors }: Clien
       </aside>
 
       <div className="flex-1">
+        <div className="mb-6">
+        </div>
         <NewProductsList 
           initialFilters={filters}
           availableColors={formattedColors}
