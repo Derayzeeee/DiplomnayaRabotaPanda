@@ -15,7 +15,7 @@ interface CategoryCardProps {
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-neutral-50">
-      <section className="relative h-[90vh] overflow-hidden">
+      <section className="relative h-[100vh] overflow-hidden">
         <div
           className="absolute inset-0 bg-fixed bg-cover bg-center"
           style={{ backgroundImage: 'url(/images/hero-bg.jpg)' }}

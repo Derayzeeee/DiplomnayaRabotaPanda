@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { useForm } from 'react-hook-form';
+import Toast from '@/components/ui/Toast';
 
 interface ShippingAddress {
   fullName: string;
@@ -24,6 +25,11 @@ export default function CheckoutPage() {
   const [error, setError] = useState<string | null>(null);
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('pickup');
   const [totalWithDelivery, setTotalWithDelivery] = useState(cart?.totalAmount || 0);
+
+  // Toast states
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
   const { 
     register, 
@@ -108,8 +114,14 @@ export default function CheckoutPage() {
         console.error('Failed to clear cart');
       }
 
-      router.push('/cart');
-      alert('Заказ успешно оформлен!');
+      setToastMessage('Заказ успешно оформлен!');
+      setToastType('success');
+      setShowToast(true);
+
+      setTimeout(() => {
+        setShowToast(false);
+        router.push('/orders');
+      }, 1500);
     } catch (error) {
       console.error('Error creating order:', error);
       setError('Произошла ошибка при оформлении заказа');
@@ -379,7 +391,7 @@ export default function CheckoutPage() {
                     <p className="font-medium">
                       {(item.price * item.quantity).toLocaleString('ru-RU')} BYN
                     </p>
-                     </div>
+                  </div>
                 ))}
                 <div className="border-t pt-4 mt-4">
                   <div className="flex justify-between text-base text-gray-500 mb-2">
@@ -412,6 +424,12 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
+      <Toast
+        show={showToast}
+        message={toastMessage}
+        type={toastType}
+        onClose={() => setShowToast(false)}
+      />
     </div>
   );
 }
